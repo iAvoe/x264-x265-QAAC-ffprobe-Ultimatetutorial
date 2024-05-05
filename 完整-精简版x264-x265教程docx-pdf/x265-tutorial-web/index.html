@@ -805,10 +805,9 @@
             <div class="mt-3 align-items-center">
                 <table class="table-center">
                     <tr class="t-border-bottom">
-                        <th class="t-light-gray">cplxSum</th>
-                        <td class="text-smaller">一直于当前与上帧帧间做差并累积<br>总差异先减半一次再添加新的差异程度</td>
-                        <td class="t-light-gray px-0">
-                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                        <th class="t-light-gray px-1">
+                            cplxSum
+                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math text-smaller">
                                 <mfrac>
                                     <mrow>
                                         <mi> c </mi><mi> p </mi><mi> l </mi><mi> x </mi><mi> S </mi><mi> u </mi><mi> m </mi>
@@ -843,13 +842,13 @@
                                     <mo> ] </mo>
                                 </mrow>
                             </math>
-                        </td>
+                        </th>
+                        <td class="text-smaller">一直于当前与上帧帧间做差并累积<br>总差异先减半一次再添加新的差异程度</td>
                     </tr>
                     <tr class=" t-border-bottom">
-                        <th class="t-light-gray">cplxCount</th>
-                        <td class="text-smaller">初始为零，用于逐帧加权 cplxBlur 的帧数计<br>÷2 与 cplxSum 同步<br>加权逻辑时越往后参考冗余理应越多的规律</td>
-                        <td class="t-light-gray px-0">
-                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                        <th class="t-light-gray px-1">
+                            cplxCount
+                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math text-smaller">
                                 <mfrac>
                                     <mrow>
                                         <mi> c </mi><mi> p </mi><mi> l </mi><mi> x </mi><mi> C </mi><mi> o </mi><mi> u </mi><mi> n </mi><mi> t </mi>
@@ -872,13 +871,13 @@
                                 </mfrac>
                                 <mo> + </mo><mn> 1 </mn>
                             </math>
-                        </td>
+                        </th>
+                        <td class="text-smaller">初始为零，用于逐帧加权 cplxBlur 的帧数计<br>÷2 与 cplxSum 同步<br>加权逻辑时越往后参考冗余理应越多的规律</td>
                     </tr>
                     <tr class="t-border-bottom">
-                        <th class="t-light-gray">cplxBlur</th>
-                        <td class="text-smaller">模糊复杂度。据帧所处推演加权的新 SATD<br>近似 100% 则当前帧复杂度推高（涨势复杂度）<br>可扭转 cplxCount 默认的跌势</td>
-                        <td class="t-light-gray px-0">
-                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                        <th class="t-light-gray px-1">
+                            cplxBlur
+                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math text-smaller">
                                 <mfrac>
                                     <mrow>
                                         <mi> c </mi><mi> p </mi><mi> l </mi><mi> x </mi><mi> S </mi><mi> u </mi><mi> m </mi>
@@ -887,14 +886,13 @@
                                     </mrow>
                                 </mfrac>
                             </math>
-                              
-                        </td>
+                        </th>
+                        <td class="text-smaller">模糊复杂度。据帧所处推演加权的新 SATD<br>近似 100% 则当前帧复杂度推高（涨势复杂度）<br>可扭转 cplxCount 默认的跌势</td>
                     </tr>
                     <tr class="t-border-bottom">
-                        <th class="t-light-gray">qScale</th>
-                        <td class="text-smaller">GOP 内累计的直线化 qp，或率失真优化量化的拉格朗日值 λ<br>已编码帧的 qp 转 qScale，便于其它参数修改更新</td>
-                        <td class="t-light-gray px-0">
-                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                        <th class="t-light-gray px-1">
+                            qScale
+                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math text-smaller">
                                 <mn> 0.85 </mn><mo> &#x00D7; <!-- multiplication sign --> </mo>
                                 <msup>
                                     <mrow>
@@ -912,13 +910,13 @@
                                     </mrow>
                                 </msup>
                             </math>
-                        </td>
+                        </th>
+                        <td class="text-smaller">GOP 内累计的直线化 qp，或率失真优化量化的拉格朗日值 λ<br>已编码帧的 qp 转 qScale，便于其它参数修改更新</td>
                     </tr>
                     <tr class="t-border-bottom">
-                        <th class="t-light-gray">ABR_rate_factor</th>
-                        <td class="text-smaller">GOP 初始值，ABR 下的 qScale（rdoqλ）转 qp</td>
-                        <td class="t-light-gray px-0">
-                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                        <th class="t-light-gray t-align-left px-1">
+                            ABR_rate_factor
+                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math text-smaller">
                                 <mfrac>
                                     <mrow>
                                         <mi> t </mi><mi> a </mi><mi> r </mi><mi> g </mi><mi> e </mi><mi> t </mi><mo> _ </mo><mi> r </mi><mi> a </mi><mi> t </mi><mi> e </mi><mo> _ </mo><mi> w </mi><mi> i </mi><mi> n </mi><mi> d </mi><mi> o </mi><mi> w </mi>
@@ -927,13 +925,13 @@
                                     </mrow>
                                 </mfrac>
                             </math>
-                        </td>
+                        </th>
+                        <td class="text-smaller">GOP 初始值，ABR 下的 qScale（rdoqλ）转 qp</td>
                     </tr>
                     <tr class="t-border-bottom">
-                        <th class="t-light-gray">ABR_qScaleNew</th>
-                        <td class="text-smaller">据 ABR 控制更新一遍 qScale（rdoqλ）</td>
-                        <td class="t-light-gray px-0">
-                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                        <th class="t-light-gray t-align-left px-1">
+                            ABR_qScaleNew
+                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math text-smaller">
                                 <mfrac>
                                     <mrow>
                                         <mrow>
@@ -947,25 +945,25 @@
                                     </mrow>
                                 </mfrac>
                             </math>
-                        </td>
+                        </th>
+                        <td class="text-smaller">据 ABR 控制更新一遍 qScale（rdoqλ）</td>
                     </tr>
                     <tr class="t-border-bottom">
-                        <th class="t-light-gray">cplxBase</th>
-                        <td class="text-smaller">常数/恒定值。CRF 模式默认的复杂度<br>若用 B 帧编码则 CTU 或宏块数量×120, 否则×80</td>
-                        <td class="t-light-gray text-smaller px-0">
-                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                        <th class="t-light-gray px-1">
+                            cplxBase
+                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math text-smaller">
                                 <mi> c </mi><mi> t </mi><mi> u </mi><mo> _ </mo><mi> c </mi><mi> o </mi><mi> u </mi><mi> n </mi><mi> t </mi><mo> &#x00D7; <!-- multiplication sign --> </mo>
                                 <mrow>
                                     <mo> ( </mo><mi> b </mi><mi> f </mi><mi> r </mi><mi> a </mi><mi> m </mi><mi> e </mi><mo> ? </mo><mn> 120 </mn><mo> : </mo><mn> 80 </mn><mo> ) </mo>
                                 </mrow>
                             </math>
-                        </td>
+                        </th>
+                        <td class="text-smaller">常数/恒定值。CRF 模式默认的复杂度<br>若用 B 帧编码则 CTU 或宏块数量×120, 否则×80</td>
                     </tr>
                     <tr class="t-border-bottom">
-                        <th class="t-light-gray">CRF_rate_factor</th>
-                        <td class="text-smaller">GOP 内累计，经 cutree，B 帧偏移乘进 qScale 后得到<br> 1-qcomp 与 CRF_qScale 对齐 （仅 cplxBase，cplxBlur运算）</td>
-                        <td class="t-light-gray text-smaller px-0">
-                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                        <th class="t-light-gray px-1">
+                            CRF_rate_factor
+                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math text-smaller">
                                 <mfrac>
                                     <mrow>
                                         <msup>
@@ -985,14 +983,14 @@
                                         <mo> ( </mo><mi> c </mi><mi> r </mi><mi> f </mi><mo> + </mo><mi> c </mi><mi> u </mi><mi> t </mi><mi> r </mi><mi> e </mi><mi> e </mi><mo> + </mo><mi> b </mi><mi> f </mi><mi> r </mi><mi> a </mi><mi> m </mi><mi> e </mi><mi> s </mi><mo> _ </mo><mi> o </mi><mi> f </mi><mi> f </mi><mi> s </mi><mi> e </mi><mi> t </mi><mo> ) </mo>
                                     </mrow>
                                 </mfrac>
-                            </math>
-                        </td>
+                            </math> 
+                        </th>
+                        <td class="text-smaller">GOP 内累计，经 cutree，B 帧偏移乘进 qScale 后得到<br> 1-qcomp 与 CRF_qScale 对齐 （仅 cplxBase，cplxBlur运算）</td>
                     </tr>
                     <tr class=" t-border-bottom">
-                        <th class="t-light-gray">CRF_qScaleNew</th>
-                        <td class="text-smaller">据 crf_rate_factor 更新当前帧的 qScale（rdoqλ）</td>
-                        <td class="t-light-gray px-0">
-                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                        <th class="t-light-gray px-1">
+                            CRF_qScaleNew
+                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math text-smaller">
                                 <mtable columnalign='left'>
                                     <mtr>
                                         <mtd>
@@ -1017,13 +1015,13 @@
                                     </mtr>
                                 </mtable>
                             </math>
-                        </td>
+                        </th>
+                        <td class="text-smaller">据 crf_rate_factor 更新当前帧的 qScale（rdoqλ）</td>
                     </tr>
                     <tr class="t-border-bottom">
-                        <th class="t-light-gray">qp</th>
-                        <td class="text-smaller">qScale（rdoqλ）经调整后得到当前帧的量化值 qp<br>各 qp 对应一套 DCT 变换量化矩阵。qp→qStep 见<a href="https://www.nazorip.site/archives/63">x264教程</a></td>
-                        <td class="t-light-gray px-0">
-                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                        <th class="t-light-gray px-1">
+                            qp
+                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math text-smaller t-align-right">
                                 <mn> 6 </mn>
                                 <msub>
                                     <mrow>
@@ -1043,8 +1041,8 @@
                                 </mfrac>
                                 <mo> + </mo><mn> 12 </mn>
                             </math>
-                              
-                        </td>
+                        </th>
+                        <td class="text-smaller">qScale（rdoqλ）经调整后得到当前帧的量化值 qp<br>各 qp 对应一套 DCT 变换量化矩阵。qp→qStep 见<a href="https://www.nazorip.site/archives/63">x264教程</a></td>
                     </tr>
                 </table>
                 <p class="text-gray-side">表：分别以[L<sub>-1</sub>]和[L]表示上帧和当前帧</p>

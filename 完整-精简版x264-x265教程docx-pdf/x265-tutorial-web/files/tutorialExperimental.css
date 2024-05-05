@@ -328,6 +328,7 @@ table, th, td {
     padding-right: 0.25em;
 }
 table th { border-bottom: 1.25px solid var(--hex-light-grayblue); }
+.t-align-left { text-align: left; }
 .t-border-bottom { border-bottom: 1px solid var(--hex-light-grayblue); }
 .t-light-gray { background-color: rgba(var(--rgb-lighest-gray), var(--no-opacity)) }
 
