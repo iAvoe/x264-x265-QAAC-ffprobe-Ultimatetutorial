@@ -439,7 +439,7 @@
                     <p>继续在 L<sub>1</sub>→L<sub>n</sub> 的1层向右迭代，分离出所有的 L，H 带，如此实现迭代 n 次即分离 2<sup>n</sup> 帧动静态，以及所有的预测与补偿，故不像传统动态搜索一样受缩放性 scalability（分辨率 vs 搜索范围）限制。是 Scalable Video Codec - SVC 编码的核心算法之一。</p>
                     <p>迭代后的高低频用 LL<sub>1</sub> LL<sub>2</sub> LH<sub>1</sub> LH<sub>2</sub> 表示低到高频的顺序，字母位数代表迭代次数。</p>
                 </div>
-                <img src="files/image13.png" alt="Lifting Scheme Temporal Motion Compensation" id="LR-UD-010" class="img-right col-auto" >
+                <img src="files/image13.png" alt="Lifting Scheme Temporal Motion Compensation" id="LR-UD-010" class="img-right col-auto mb-auto" >
             </div>
 
             <h4>高斯模糊 Gaussian blur</h4>
@@ -514,20 +514,19 @@
             </code></pre>
 
             <h2>溯块向量搜索</h2>
+            <p>与帧内编码并行给动态搜索提供溯块向量（cu帧内/帧间朝向以及大小）的步骤。由于移动的物件会跨越多个 PU ，所以将涉及同个移动物件的 PB 合到一起就能冗余一群 PB 的动态向量。x264/5 用 <span class="text-blue-emph">--ref</span> 参数于时域上划区，逐 PU 创建 L<sub>0</sub> 和 L<sub>1</sub> 左右两排参考列表。x265 在 x264 <span class="text-blue-emph">--direct auto</span> 的基础上添加了 AMVP 与 Merge mode 两个方案</p>
+
+            <h4>高级动态向量搜索 Advanced Motion Vector Prediction</h4>
+            <ol class="mt-0">
+                <li>在帧内看当前 PU 左下的邻 PU，优先匹配向量往帧内指的邻 PU</li>
+                <li>参考向量指向其它帧的临 PU；并等比缩放，对齐到邻 PU 已按帧间差异对齐好的向量</li>
+                <li>若以上步骤没找到参选向量，就把同样的步骤于当前 PU 右上角进行一次</li>
+                <li>若应了如早批 PU 刚开始算，找不到参选向量的情况下就直接从时域搜索：<ul>
+                    <li class="text-gray-side">照帧间参考图像变化的内容差异做缩放调整，从右下角的相邻 PU 找参选</li>
+                </ul></li>
+                <li>若仍不可用，就找当前 PU 中心位置的其它同位 PU；若最后没凑不齐两个参选向量，代入v=0,0</li>
+            </ol>
             <div class="row">
-                <p>与帧内编码并行给动态搜索提供溯块向量（cu帧内/帧间朝向以及大小）的步骤。由于移动的物件会跨越多个 PU ，所以将涉及同个移动物件的 PB 合到一起就能冗余一群 PB 的动态向量。x264/5 用 <span class="text-blue-emph">--ref</span> 参数于时域上划区，逐 PU 创建 L<sub>0</sub> 和 L<sub>1</sub> 左右两排参考列表。x265 在 x264 <span class="text-blue-emph">--direct auto</span> 的基础上添加了 AMVP 与 Merge mode 两个方案</p>
-
-                <h4>高级动态向量搜索 Advanced Motion Vector Prediction</h4>
-                <ol class="mt-0">
-                    <li>在帧内看当前 PU 左下的邻 PU，优先匹配向量往帧内指的邻 PU</li>
-                    <li>参考向量指向其它帧的临 PU；并等比缩放，对齐到邻 PU 已按帧间差异对齐好的向量</li>
-                    <li>若以上步骤没找到参选向量，就把同样的步骤于当前 PU 右上角进行一次</li>
-                    <li>若应了如早批 PU 刚开始算，找不到参选向量的情况下就直接从时域搜索：<ul>
-                        <li class="text-gray-side">照帧间参考图像变化的内容差异做缩放调整，从右下角的相邻 PU 找参选</li>
-                    </ul></li>
-                    <li>若仍不可用，就找当前 PU 中心位置的其它同位 PU；若最后没凑不齐两个参选向量，代入v=0,0</li>
-                </ol>
-
                 <h4>并和搜索模式 Merge Mode</h4>
                 <p id="LR-UD-011" class="col-8">然后用相对简单含糊算法接手剩余块的向量：从帧间，帧内凑五个参选块 candidate，两个备选，少服从多地并和动态向量。（该模式会跳过PU的边缘及当前向量以提速）</p>
                 <img src="files/image15.png" alt="HEVC Merge Mode" id="LR-UD-012" class="img-medium img-right col-4 mb-auto" >
@@ -1171,6 +1170,119 @@ x265.exe --abr-ladder 1440p8000_2160p11000_2160p16000.txt --fps 59.94 --input-de
             </code></pre>
 
             <h4>x265 jpsdr-mod 参数</h4>
+            <pre class="mb-0"><code>
+<b>--aq-auto</b>&lt;8bit四开关十进制，默认0关&gt;对应下表：
+            </code></pre>
+            <div class="align-items-center">
+                <table class="table-center">
+                    <thead>
+                        <tr class="t-border-bottom">
+                            <th>值</th>
+                            <th>逐帧aq</th>
+                            <th>延迟逐帧aq(hysteresis)</th>
+                            <th>HDR兼容</th>
+                            <th>aq-mode 5</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="t-border-bottom t-light-gray">
+                            <td>1</td>
+                            <td>√</td>
+                            <td> </td>
+                            <td> </td>
+                            <td> </td>
+                        </tr>
+                        <tr class="t-border-bottom">
+                            <td>2,3</td>
+                            <td>√</td>
+                            <td>√</td>
+                            <td> </td>
+                            <td> </td>
+                        </tr>
+                        <tr class="t-border-bottom t-light-gray">
+                            <td>4</td>
+                            <td>√</td>
+                            <td> </td>
+                            <td>√</td>
+                            <td> </td>
+                        </tr>
+                        <tr class="t-border-bottom">
+                            <td>8</td>
+                            <td>√</td>
+                            <td> </td>
+                            <td> </td>
+                            <td>√</td>
+                        </tr>
+                        <tr class="t-border-bottom t-light-gray">
+                            <td>6</td>
+                            <td>√</td>
+                            <td>√</td>
+                            <td>√</td>
+                            <td> </td>
+                        </tr>
+                        <tr class="t-border-bottom">
+                            <td>10</td>
+                            <td>√</td>
+                            <td>√</td>
+                            <td> </td>
+                            <td>√</td>
+                        </tr>
+                        <tr class="t-border-bottom t-light-gray">
+                            <td>12</td>
+                            <td>√</td>
+                            <td> </td>
+                            <td>√</td>
+                            <td>√</td>
+                        </tr>
+                        <tr class="t-border-bottom">
+                            <td>14</td>
+                            <td>√</td>
+                            <td>√</td>
+                            <td>√</td>
+                            <td>√</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <pre><code>
+<b>-aq-fast-edge</b>&lt;开关，<span class="text-red-emph">需aq-mode4,5</span>&gt;边缘检测跳过高斯模糊过滤，不适合脏片源
+<b>--aq-bias-strength</b>&lt;浮点，默认1，<span class="text-red-emph">需aq-mode3,5</span>&gt;aq-strength偏给暗场的程度
+<b>--aq-strength-edge</b>&lt;浮点0~3，默认=aq-strength，<span class="text-red-emph">需aq-mode4,5</span>&gt;偏给纹理的aq-strength
+<b>--aq-bias-strength-edge</b>&lt;浮点，默认=aq-bias-str，<span class="text-red-emph">需aq-mode5</span>&gt;aq-strength-edge偏给暗场的程度
+            </code></pre>
+
+            <h2>模式决策</h2>
+            <p>Mode decision 整合搜来的信息，宏观地定制分块参考量化等细分方案。因为码率最小的压缩方案画质也差。注意片源含明显边缘失真时反而要减少决策优化</p>
+            <div class="align-items-center">
+                <img src="files/image24.png" alt="Mode Decision General" class="" >
+            </div>
+
+            <pre><code>
+<b>--rd</b>&lt;1/2/3/5，默认3，大则慢&gt;据优化模式决策的程度。 建议快速用<span class="text-blue-emph">1</span>，<span class="text-blue-emph">2</span>；高压用<span class="text-blue-emph">3</span>；片源数据无损(非视觉无损)时用<span class="text-blue-emph">5</span>
+    · <span class="text-blue-emph">1</span>优化帧内参考，并块/跳过决策，含明显边缘失真时用
+    · <span class="text-blue-emph">2</span>加分块决策，含明显边缘失真时用
+    · <span class="text-blue-emph">3</span>加帧间决策，高压高量化时可平衡
+    · <span class="text-blue-emph">5==6</span>加向量/帧间方向预测决策，比3慢一倍，片源含边缘失真时会强化失真
+<b>--limit-modes</b>&lt;开关&gt;用附近的4个子CU以判断用merge还是AMVP，会大幅减少rect/amp的效果，提速明显。会增大或减少体积，微降画质但难以察觉
+<b>--limit-refs</b>&lt;整数0~3，默认3&gt;限制分块用信息可参考性。<span class="text-blue-emph">0不限</span>压缩高且慢；<span class="text-blue-emph">1</span>用cu分裂后的信息+差异信息描述自身(推荐)；<span class="text-blue-emph">2</span>据单个cb的差异信息建立pu；<span class="text-blue-emph">3=1+2</span>
+<b>--rskip</b>&lt;整数0~2&gt;前cu分块被跳过时，判断后cu接着搜索分块还是提前退出的参数。画面越接近录屏/低成本动漫就用得越多
+    · <span class="text-blue-emph">0</span>继续分析。适合信噪比差/高噪源。原画很干净则不如<span class="text-blue-emph">1</span>
+    · <span class="text-blue-emph">1</span>rd0~4下据临cu是否细分而定；rd5~6下看附近2Nx2N cu分块难度而定，高压和一般情况推荐
+    · <span class="text-blue-emph">2</span>直接对比cu纹理密度edge density，快且不比前者差，但存在对源的画质要求及客观判断“画质”的能力
+<b>--tskip-fast</b>&lt;开关，默认关&gt;跳过4x4 tu的变换，忽略部分DCT系子coefficients来加速，CbCr-tu也取决于Y块是否被跳过。在全屏小细节的视频中有显著加速效果。建议除高压以外的情况使用
+<b>--rskip-edge-threshold</b>&lt;0~100，默认5: 趋向于分块，<span class="text-red-emph">需rskip大于1</span>&gt;用Sobel算法获取cu纹理密度再除以块所占面积的百分比。纹理密度&gt;阈值=分块，量化强度越高越关键。8×8或16×16块下默认5%（即含3或12个系子）就分
+注：类似x264 deadzone参数
+    · 像素风：<span class="text-blue-emph">据像素变大的程度决定</span>。如分辨率宽÷2，分辨率高÷2会回到1x1像素大小，则使默认值乘以2以提速
+    · 抗涂抹：<span class="text-blue-emph">rskip 2 rskip-edge-threshold 3</span>。即“有一点不平就应分块”。比rskip 0快，用于已知要保留雪景等全屏大量动态信息的源的情况下，节省传统分块计算时间。可=在不添噪点的情况下达成抗涂抹的目的
+            </code></pre>
+            <div class="align-items-center">
+                <img src="files/image25.png" alt="rSkip Edge Threshold" class="img-small" >
+                <p class="text-gray-side">图：影响DCT系子分布的块中像素，而DCT系子的密度影响rskip-edge-threshold的设置</p>
+            </div>
+
+            <h2>率失真优化控制</h2>
+            <h4>率失真优化 Rate distortion optimization</h4>
+            <p>多个码率下测得的 cu 失真（编码前后像素值差D)），挑出 R-D 曲线下的平衡区间。由代价函数：</p>
 
         </div>
 
