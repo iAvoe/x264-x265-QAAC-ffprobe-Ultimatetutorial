@@ -1,9 +1,0 @@
-name: Push generated webpage to another repository
-uses: nkoppel/push-files-to-another-repository@1.1.0
-env:
-  API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
-with:
-  source-files: '%E5%AE%8C%E6%95%B4-%E7%B2%BE%E7%AE%80%E7%89%88x264-x265%E6%95%99%E7%A8%8Bdocx-pdf/x265-tutorial-web'
-  destination-username: 'iAvoe'
-  destination-repository: 'iAvoe.github.io'
-  destination-directory: 'x265-tutorial-web/'
