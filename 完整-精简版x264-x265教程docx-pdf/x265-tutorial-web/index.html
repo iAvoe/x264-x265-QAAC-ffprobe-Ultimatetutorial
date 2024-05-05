@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang='en'>
+	<head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+        <!-- Basic Bootstrap Javascript <script src="./files/bootstrap.min.js"></script> -->
+        <!-- Bootstrap CSS <link rel="stylesheet" href="./files/bootstrap.css"> -->
+        <!-- Bootstrap Icons CSS (remote)
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" crossorigin="anonymous">
+        -->
+        
+        <!-- JavaScript Codes -->
+        <script src="./files/tutorialExperimental.js" defer></script>
+
+        <!-- Custom CSS Codes -->
+        <link rel="stylesheet" href="./files/tutorialExperimental.css">
+
+        <!--
+            Example run function
+            function runCommon() {
+            let s1 = document.getElementById("string1").value;
+            let s2 = document.getElementById("string2").value;
+            document.getElementById("output").value = common(s1，s2);
+        }-->
+        <title>x265教程 HTML 版</title>
+	</head>
+	<body class="text-gray-main">
+        <div class="container p-3 mt-3 rounded-9 border-main">
+            <h1>x265教程<font class="text-blue-emph"> HTML 完整版</font></h1>
+            <p class="text-gray-side">欢迎阅读！若有什么不会的可以加群<a href='https://jq.qq.com/?_wv=1027&k=5YJFXyf'>691892901</a>。本教程仅算盲人摸象的业余分析，仅具备业余参考价值，入门先看x264视频压缩教程综合版。手头需要编码压制不妨搭配急用版教程</p>
+
+            <h3>ffmpeg，VapourSynth，avs2yuv 传递参数</h3>
+            <ul class="list-dotless text-gray-side">
+                <li class="mt-3">ffmpeg -i &lt;源&gt; -an -f yuv4mpegpipe -strict unofficial - | x265 --y4m - --output</li>
+                <li class="text-gray-note mt-3">ffmpeg -i &lt;源&gt; -an -f rawvideo	- | x265.exe --input-res &lt;宽x高&gt; --fps &lt;整/小/分数&gt; - --output</li>
+                <li class="mt-3"><font class="text-blue-emph">-f</font>格式，<font class="text-blue-emph">-an</font>关音频，<font class="text-blue-emph">-strict unofficial</font>关格式限制，<font class="text-blue-emph"></font>--y4m</font>对应"YUV for MPEG"，两个"-"是Unix pipe串流</li>
+                <li class="mt-3">VSpipe	源.vpy --y4m - | x265.exe - --y4m --output</li>
+                <li class="mt-3">avs2yuv	源.avs -csp&lt;色&gt; -depth&lt;深&gt; - | x265.exe --input-res &lt;宽x高&gt; --fps &lt;整/小/分数&gt; - --output</li>
+                <li class="mt-3">avs2pipemod 源.avs -y4mp | x265.exe --y4m - --output</li>
+            </ul>
+
+            <table>
+                <tr>
+                    <td><h4 class="m-0">搜索 ffmpeg 支持的色度采样:</h4></td>
+                    <td class="text-gray-side">ffmpeg -pix_fmts | findstr &lt;或grep关键字&gt;</td>
+                </tr>
+                <tr>
+                    <td><h4 class="m-0">检查/选择色深，版本，编译:</h4></td>
+                    <td class="text-gray-side">x265.exe -V，-D &lt;8/10/12调整色深&gt;</td>
+                </tr>
+                <tr>
+                    <td><h4 class="m-0">多字体+艺术体+上下标 .ass 字幕渲染:</h4></td>
+                    <td class="text-gray-side">ffmpeg -filter_complex "ass='F\:/字幕.ass'"滤镜</td>
+                </tr>
+                <tr>
+                    <td><h4 class="m-0">Linux Bash 报错导出:</h4></td>
+                    <td class="text-gray-side">x265.exe [命令行] 2>&1 | tee home\[用户名]\Desktop\报错.txt</td>
+                </tr>
+                <tr>
+                    <td><h4 class="m-0">Mac Terminal 报错导出:</h4></td>
+                    <td class="text-gray-side">x265.exe [命令行] 2>&1 | tee User\[用户名]\Desktop\报错.txt</td>
+                </tr>
+                <tr>
+                    <td><h4 class="m-0">Windows CMD 报错导出:</h4></td>
+                    <td class="text-gray-side">x265.exe [命令行] 2> [桌面路径]\报错.txt</td>
+                </tr>
+            </table>
+
+            <h2>分块</h2>
+            <p>hevc中，帧下结构按面积大小分为<font class="text-blue-emph">帧 → 瓦 tile → 条带 slice → 条带分段 ss → ctu 树单元 → cu 单元</font>.</p>
+            <p>cu，cb 由同帧的 ctu 经动态搜索ME与运动补偿MC隔离所得。其U/unit代表YCbCr整体块；B/block则单指Y，Cb或Cr块，区分亮度色度。ipcm-cu 代表跳过 MEMC，直达环路滤波的「帧内编码 pcm 波形 cu」intra pulse code modulation cu，因为“块”是一串像素值的波形，只是用元数据“换行”到二维而已。</p>
+            <div class="align-items-center">
+                <img src="files/image1.png" alt="Coding Tree Unit" class="img-medium" />
+                <p class="text-gray-side mt-0">图：Coding Tree Unit以及其下Coding Unit的划分</p>
+            </div>
+
+            <h4 class="same-line">PU - 预测单元:</h4>
+            <p class="same-line">prediction unit 是编码完，用做参考源的块。支持cu上对称 rectangle，非对称asymmetric 划分，以更好的隔离动静态。亮度与色度上的分裂法可以不同，小至4x4像素。</p>
+            <div class="align-items-center">
+                <img src="files/image2.png" alt="Prediction Unit" class="img-medium" />
+                <p class="text-gray-side mt-0">图：pu的4种对称rectangular和4种不对称asymmetric划分</p>
+            </div>
+            
+            <h4 class="same-line">TU - 变换单元:</h4>
+            <p class="same-line">transformation unit 的划分与 CU 而非 PU 同步，实现变换和量化</p>
+            <div class="align-items-center">
+                <img src="files/image3.png" alt="Transform Unit" class="img-medium" />
+            </div>
+
+            <h4 class="same-line">AU - 存取单元:</h4>
+            <p class="same-line">access unit，解码端用于启动解码播放的块，一般为 IDR-AU</p>
+
+            <pre><code>
+<b>--ctu</b>&lt;64/32/16，默认64&gt;编码树单元最大大小。大则有损压缩效率高，速度慢。一般建议保持默认，除非片有类似jpeg边缘损失的老片设<font class="text-blue-emph">32</font>，分辨率特别小的老片设<font class="text-blue-emph">16</font>
+<b>--min-cu-size</b>&lt;32/16，默认8&gt;限制最小cu大小，简化计算步骤，因为使往后步骤pu，tu的划分也会更大。用多一点码率换取编码速度的参数。建议日常环境使用<font class="text-blue-emph">16</font>或快速编码环境使用<font class="text-blue-emph">32</font>
+<b>--rect --amp</b>&lt;开关，默认关，受limit-modes限制，<font class="text-red-emph">amp需rect</font>&gt;限制最小cu大小，简化计算步骤，因为使往后步骤pu，tu的划分也会更大。用多一点码率换取编码速度的参数。建议日常环境使用<font class="text-blue-emph">16</font>或快速编码环境使用<font class="text-blue-emph">32</font>
+            </code></pre>
+
+            <h2>变换</h2>
+            <div class="row">
+                <div id="LR-UD-001" class="col-8">
+                    <h4>一维傅里叶变换 1D Fourier Transform</h4>
+                    <p>给出与原信号波形等高，从最长的频率周期开始不断缩窄（周期增加）并根据源信号调整相位的参考余弦。在参考余弦波变化的过程中，记下两条波形吻合度变化的曲线-不同波形周期的振幅，得频域信号。反过来将频域所对应的波形加回去就是逆变换。为将源波形中反相（上下颠倒）的余弦也考虑在内，所以计算过程含取立方转正。</p>
+                    <p>
+                        「不断缩窄的参考余弦」可用
+                        <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                            <mi> cos </mi>
+                            <mrow>
+                                <mo> ( </mo><mi> x </mi>
+                                <mfrac>
+                                    <mrow>
+                                        <mn> 2 </mn>
+                                        <mi> &#x03C0; <!-- greek pi --> </mi>
+                                    </mrow>
+                                    <mrow>
+                                        <mi> T </mi>
+                                    </mrow>
+                                </mfrac>
+                                <mo> ) </mo>
+                            </mrow>
+                        </math>
+                        表示，以及复数用
+                        <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                            <mi> cos </mi>
+                            <mrow>
+                                <mo> ( </mo><mi> x </mi><mo> ) </mo>
+                            </mrow>
+                            <mo> + </mo><mi> sin </mi>
+                            <mrow>
+                                <mo> ( </mo><mi> i </mi><mi> x </mi><mo> ) </mo>
+                            </mrow>
+                        </math>
+                        表示，相位可记为
+                        <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                            <msqrt>
+                                <mi> F </mi><mi> T </mi>
+                                <msup>
+                                    <mrow>
+                                        <mrow>
+                                            <mo> ( </mo><mi> x </mi><mo> ) </mo>
+                                        </mrow>
+                                    </mrow>
+                                    <mrow>
+                                        <mn> 2 </mn>
+                                    </mrow>
+                                </msup>
+                                <mo> + </mo><mi> i </mi><mi> F </mi><mi> T </mi>
+                                <msup>
+                                    <mrow>
+                                        <mrow>
+                                            <mo> ( </mo><mi> x </mi><mo> ) </mo>
+                                        </mrow>
+                                    </mrow>
+                                    <mrow>
+                                        <mn> 2 </mn>
+                                    </mrow>
+                                </msup>
+                            </msqrt>
+                        </math>
+                        以及复数用
+                        <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                            <mi> arctan </mi><mn> 2 </mn>
+                            <mrow>
+                                <mo> ( </mo><mi> i </mi><mi> F </mi><mi> T </mi>
+                                <mrow>
+                                    <mo> ( </mo><mi> x </mi><mo> ) </mo>
+                                </mrow>
+                                <mo> , </mo><mi> F </mi><mi> T </mi>
+                                <mrow>
+                                    <mo> ( </mo><mi> x </mi><mo> ) </mo>
+                                </mrow>
+                                <mo> ) </mo>
+                            </mrow>
+                        </math>
+                        ，表示频域点的亮度和位移（二维变换下是旋角）。
+                        <br>
+                        <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                            <mi> arctan </mi><mn> 2 </mn>
+                            <mrow>
+                                <mo> ( </mo><mi> y </mi><mo> , </mo><mi> x </mi><mo> ) </mo>
+                            </mrow>
+                        </math>
+                        代表二轴坐标系统计一圈 360°（2π）的旋角，几何坐标系中同理的
+                        <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                            <msup>
+                                <mrow>
+                                    <mi> tan </mi>
+                                </mrow>
+                                <mrow>
+                                    <mo> - </mo><mn> 1 </mn>
+                                </mrow>
+                            </msup>
+                        </math>
+                        超过180°（π）会归零而不用。详见<a href="https://www.desmos.com/calculator/qpnz9celzf">desmos例1</a>，<a href="https://www.desmos.com/calculator/ywxqicajbv">desmos例2</a>，<a href="https://www.youtube.com/watch?v=spUNpyF58BY">3b1b视频科普</a>以及<a href="https://www.youtube.com/watch?v=tEzgtbnbXgQ">Computer Vision 公开课</a>。
+                    </p>
+                    <h4>二维傅里叶变换2D-FT</h4>
+                    <p>宽高上单拆出线来分别进行1DFT，通过双求和/双积分 ΣΣ/∫∫ 整合。在频域中相当于每个像素的变换结果相加或干涉。亮则振幅大，距中心远则频率高。强在可编辑性，可以消除打印喷头，抖动等均匀噪声。</p>
+                </div>
+                <img src="files/image4.png" alt="Fourier Transform Phenomenons" id="LR-UD-002" class="img-medium img-right col-4 mb-auto" />
+                <div id="LR-UD-003" class="col-8">
+                    <h4>二维离散余弦变换 2D Descrete Cosine Transform</h4>
+                    <p>用预制的二维波形模具，穷举加减列出各波形格子的使用次数，实现比2DFT更快的变换。</p>
+                    <p class="text-gray-side mt-0">图：二维傅里叶变换的特性，背景特性以及可编辑性</p>
+                </div>
+                <img src="files/image5.png" alt="Fourier Transform Editing" id="LR-UD-004" class="img-medium img-right col-4 mb-auto" />
+            </div>
+
+            <pre class="m-0"><code>
+<b>--limit-tu</b>&lt;整数0~4默认关，<font class="text-red-emph">需tu-intra/inter-depth大于1</font>&gt;提前退出tu分块，以量化/残差编码质量为代价提速。<a href="https://forum.doom9.org/showthread.php?p=1963250#post1963250">tu大则易出现量化涂抹</a>，不利于暂停画质
+    · <font class="text-blue-emph">1</font> 一般，画质编码，取分裂/跳过中花费最小的
+    · <font class="text-blue-emph">2</font> 以同ctu内的首个tu分裂次数为上限
+    · <font class="text-blue-emph">3</font> 快速编码取帧内帧间附近tu分裂平均次数为上限
+    · <font class="text-blue-emph">4</font> 不推荐，将3作为未来tu的分裂上限，相比0+20%速度
+<b>--rdpenalty</b>&lt;整数0~2，默认关，<font class="text-red-emph">需tu-intra-depth大于1</font>&gt;与limit-tu相反，强制tu分块细化以增加算力损耗并降低量化涂抹。可理解为tu分块的下限，例如高limit-tu，高crf时设2，避免32x32tu量化效果太强画面糊掉
+    · <font class="text-blue-emph">1</font> 提高率失真代价而减少32x32tu出现概率
+    · <font class="text-blue-emph">2</font> 强制32x32tu分块
+    · <font class="text-red-emph">32x32的帧内cu需tu-intra-depth 2</font>
+    · <font class="text-red-emph">64x64帧内cu需tu-intra-depth 3</font>
+<b>--tu-intra-depth --tu-inter-depth</b>&lt;整数1~4，默认1，<font class="text-blue-emph">配合limit-tu</font>&gt;空间域tu分裂次数上限,默认只在cu基础上分裂一次。决定量化质量所以建议开高，建议一般情况设2，保画质设3~4
+<b>--max-tu-size</b>&lt;32/16/8/4，默认32&gt;大tu使压缩高而慢，以及瑕疵检测能力越差。码率换时间加画质。编码已有边缘损失的老片可搭配<font class="text-blue-emph">ctu 32</font>与<font class="text-blue-emph">max-tu-size 16</font>
+            </code></pre>
+
+            <h2>帧间-动态搜索</h2>
+            <p>逐块于帧间找最小失真朝向 Direction of minimal distortion / DMD，组成一张张帧间矢量表。缺则参考帧与分块的建立就不甚理想，损失可能的压缩率或画质。</p>
+            <div class="align-items-center">
+                <img src="files/image6.png" alt="Jain&Jain Search" class="" />
+                <p class="text-gray-side mt-0">图：传统的 Jain & Jain 十字搜索。</p>
+                <img src="files/image7.png" alt="LDSP&SDSP Search" class="" />
+                <p class="text-gray-side mt-0">图：大小菱搜索。x264/5中，六边形搜索me hex将LDSP的上下左右斜8个外点减到6个，SDSP的细化规则不变。</p>
+                <img src="files/image8.png" alt="Uneven multi-hexagon Search" class="" />
+                <p class="text-gray-side mt-0">图：umh搜索。</p>
+            </div>
+
+            <pre><code>
+<b>--analyze-src-pics</b>&lt;开关，默认关&gt;允许动态搜索查找片源帧，耗时增加压缩
+<b>--me</b>&lt;hex/umh/star/esa/full，推荐umh&gt;搜索算法，umh平衡，star四角星搜索之后收益递减，sea是优化过的x264 esa穷举，但收益递减仍大
+<b>--merange</b>&lt;整数，推荐4的倍数，<font class="text-red-emph">需me</font>&gt;<font class="text-blue-emph">完全取决于ME算法和分辨率</font>，过大会因「找不到更好，找到也是错」而损失画质和压缩
+    · 1920x1080下推荐<font class="text-blue-emph">48</font>左右
+    · 3840x2160下推荐<font class="text-blue-emph">52</font>左右
+    · me hex下设<font class="text-blue-emph">16</font>
+    · me umh-star设<font class="text-blue-emph">≥32</font>
+<b>--no-temporal-mvp</b>&lt;开关&gt;关P-B条带的动态搜索，除直播外不推荐
+<b>--hme-search</b>&lt;hex/umh/star/esa/full，<font class="text-red-emph">关me</font>&gt;三份异分辨率原画分别查找宏观到微观的搜索动态信息
+<b>--hme-range</b>&lt;三整数，<font class="text-red-emph">需hme-search</font>，推荐默认<font class="text-blue-emph">16,32,48</font>&gt;对应<math xmlns='http://www.w3.org/1998/Math/MathML'><mfrac><mrow><mn> 1 </mn></mrow><mrow><mn> 16 </mn></mrow></mfrac></math>，<math xmlns='http://www.w3.org/1998/Math/MathML'><mfrac><mrow><mn> 1 </mn></mrow><mrow><mn> 4 </mn></mrow></mfrac></math>和全分辨率三画面
+            </code></pre>
+            
+            <h2>帧间-子像素运动补偿</h2>
+            <p>动态预测 ME 除了与帧内编码后的帧做差（以便推演P/B/I帧，见x264教程）以外，还被动态补偿 MC 以「允动画之移，拦静画所变」的原理消除如噪点之类导致的动态信息误判，同时将帧间矢量表中动态矢量的精度提高到
+            <math xmlns='http://www.w3.org/1998/Math/MathML'>
+                <mfrac>
+                    <mrow>
+                        <mn> 1 </mn>
+                    </mrow>
+                    <mrow>
+                        <mn> 4 </mn>
+                    </mrow>
+                </mfrac>
+            </math>
+            像素以修复「动态预测因精度低导致细节损失」的画面错误。</p>
+            <p>大体上，补偿过程是用帧内编码所得的“粗加工PU”与源视频对应的块做差，使用有限冲激响应滤镜 Finite impulse response (FIR) filter 放大。此处指 x264-6tap；x265-8tap，7tap 和 4tap 滤镜。放大后用 SATD 对准动态矢量，得“精加工PU”。</p>
+            <div class="row">
+                <div id="LR-UD-005" class="col-8 align-items-center">
+                    <table class="table-center">
+                        <tr>
+                            <th>编码器</th>
+                            <th>平面-块类型</th>
+                            <th>范围精度</th>
+                            <th>插值方法</th>
+                        </tr>
+                        <tr class="t-light-gray">
+                            <td>x264官方</td>
+                            <td>亮度Y</td>
+                            <td>½像素（hpel）</td>
+                            <td>6tap FIR</td>
+                        </tr>
+                        <tr>
+                            <td>x264官方</td>
+                            <td>亮度Y</td>
+                            <td>¼像素（qpel）</td>
+                            <td>双线性插值（Bi-lerp）</td>
+                        </tr>
+                        <tr class="t-light-gray">
+                            <td>x264官方</td>
+                            <td>色度C</td>
+                            <td>hpel+qpel</td>
+                            <td>上下左右加权平均</td>
+                        </tr>
+                        <tr>
+                            <td>x265官方</td>
+                            <td>亮度Y</td>
+                            <td>hpel+qpel</td>
+                            <td>上下左右加权平均</td>
+                        </tr>
+                        <tr class="t-light-gray">
+                            <td>x265官方</td>
+                            <td>亮度Y</td>
+                            <td>¼像素（qpel）</td>
+                            <td>两种7tap FIR</td>
+                        </tr>
+                        <tr>
+                            <td>x265官方</td>
+                            <td>色度C</td>
+                            <td>hpel+qpel</td>
+                            <td>4tap FIR</td>
+                        </tr>
+                    </table>
+                </div>
+                <img src="files/image9.png" alt="hpel qpel interpolation" id="LR-UD-006" class="img-medium img-right col-4 mb-auto" />
+            </div>
+            <p class="text-gray-side mt-0">表：x264/5实现h~qpel插值计算（实现了浮点→整数变量的程序优化）</p>
+            <p class="text-gray-side mt-0">图：此“子像素”特指是放大出的half-pixel(hpel)
+            <math xmlns='http://www.w3.org/1998/Math/MathML'>
+                <mfrac>
+                    <mrow>
+                        <mn> 1 </mn>
+                    </mrow>
+                    <mrow>
+                        <mn> 2 </mn>
+                    </mrow>
+                </mfrac>
+            </math>
+            像素，及quarter-pixel(qpel)
+            <math xmlns='http://www.w3.org/1998/Math/MathML'>
+                <mfrac>
+                    <mrow>
+                        <mn> 1 </mn>
+                    </mrow>
+                    <mrow>
+                        <mn> 4 </mn>
+                    </mrow>
+                </mfrac>
+            </math>
+            像素。</p>
+            
+            
+            <div class="align-items-center">
+                <img src="files/image10.png" alt="7tap 8tap interpolation 1" class="img-medium" />
+            </div>
+            <p class="text-gray-side mt-0">图：Y平面FIR插值和subme并行，调用8²或16²块的横/纵向参考源。若subme所得动态的:</p>
+            <ul>
+                <li class="text-gray-side">向量横分量==0: [d][n]分别用7tapα或β采样整像素[A]</li>
+                <li class="text-gray-side">向量横分量!=0: [f][q]分别用7tapα或β采样子像素[b]</li>
+                <li class="text-gray-side">向量纵分量==0: [a][c]分别用7tapα或β采样整像素[A]</li>
+                <li class="text-gray-side">向量纵分量!=0: [i][k]用8tap分别采样子像素[a][c]</li>
+            </ul>
+            <div class="align-items-center">
+                <img src="files/image11.png" alt="7tap 8tap interpolation 2" class="img-medium" />
+            </div>
+
+            <pre><code>
+<b>--subme</b>&lt;整数范围1~7，默认2&gt;根据源帧率借下表判断。
+注：x264的rdo选项和subme并用，所以与x265不通用；SATD算法见x264教程。
+            </code></pre>
+            <div class="align-items-center mt-3">
+                <table class="table-center">
+                    <tr>
+                        <th>范围（率失真优化开）</th>
+                        <th>推荐</th>
+                        <th>hpel迭代</th>
+                        <th>hpel搜索</th>
+                        <th>qpel迭代</th>
+                        <th>qpel搜索</th>
+                        <th>统计法</th>
+                    </tr>
+                    <tr class="t-light-gray">
+                        <td>30fps</td>
+                        <td class="text-blue-emph">3</td>
+                        <td>2次</td>
+                        <td>4方向</td>
+                        <td>1次</td>
+                        <td>4方向</td>
+                        <td>SATD</td>
+                    </tr>
+                    <tr>
+                        <td>48fps</td>
+                        <td class="text-blue-emph">4</td>
+                        <td>2次</td>
+                        <td>4方向</td>
+                        <td>2次</td>
+                        <td>4方向</td>
+                        <td>SATD</td>
+                    </tr>
+                    <tr class="t-light-gray">
+                        <td>60fps</td>
+                        <td class="text-blue-emph">5</td>
+                        <td>1次</td>
+                        <td>8方向</td>
+                        <td>1次</td>
+                        <td>8方向</td>
+                        <td>SATD</td>
+                    </tr>
+                    <tr>
+                        <td>90fps</td>
+                        <td class="text-blue-emph">6</td>
+                        <td>2次</td>
+                        <td>8方向</td>
+                        <td>1次</td>
+                        <td>8方向</td>
+                        <td>SATD</td>
+                    </tr>
+                    <tr class="t-light-gray">
+                        <td>≥144fps</td>
+                        <td class="text-blue-emph">7</td>
+                        <td>2次</td>
+                        <td>8方向</td>
+                        <td>2次</td>
+                        <td>8方向</td>
+                        <td>SATD</td>
+                    </tr>
+                </table>
+            </div>
+
+            <h4>加权预测 Weighted Prediction</h4>
+            <div class="row">
+                <div id="LR-UD-007" class="col-10">
+                    <p>解决淡入淡出 fade 过程中，部分 PU 因误参考，亮度变化不一的块失真问题；分为 P-B 条带用的显加权，和 B 条带用的隐加权。</p>
+                    <ul class="text-gray-side">
+                        <li>显Explicit：原画和编码过的参考帧做差，差距越小权重越高</li>
+                        <li>隐Implicit：用参考帧距离做加权平均插值，距离越近权重越高</li>
+                    </ul>
+                </div>
+                <img src="files/image12.png" alt="Implicit Weighted Prediction" id="LR-UD-008" class="img-small img-right col-2 mt-3 mb-auto" />
+
+                <pre><code>
+<b>--weightb</b>&lt;开关，默认关&gt;启用B条带的隐加权预测。注意光线变化和淡入淡出在公开课，电脑录屏，低成本/旧动漫等片源中几乎不存在，这种情况下打开只会浪费性能
+                </code></pre>
+            </div>
+
+            <h2>帧间-时域架网搜索</h2>
+            <h4>一维小波变换 1D Wavelet Transform</h4>
+            <p>让短波像拉链一样划过一维信号，时间轴上根据短波波形选择，将与源信号匹配的程度变化记为频域信息（如使用低频-高频-低频的对称波形拆出音频热度图），支持更换波形以提取特征（如特征采样式音频降噪滤镜）。解决了傅里叶变换只有空间频域，无法描述信号随时间变化过程的原生缺陷，缺点是分辨率低。</p>
+            
+            <h4>基于提升式小波变换的时域动态补偿 lifting-scheme temporal MC</h4>
+            <div class="row">
+                <div id="LR-UD-009" class="col-auto">
+                    <p>类似于 crf/abr 模式推演量化值中以 a-b 帧之差做复杂度累计。此处是用以预测 b-c 帧的差，而<font class="text-blue-emph">预测对的更新到低频L带，差错的更新到（不再参与下轮预测）的高频H带</font>，得 0-1-2，2-3-4，4-5-6 等（prediction）帧以及其 H 带（update）构成第 0 层</p>
+                    <p>继续在 L<sub>1</sub>→L<sub>n</sub> 的1层向右迭代，分离出所有的 L，H 带，如此实现迭代 n 次即分离 2<sup>n</sup> 帧动静态，以及所有的预测与补偿，故不像传统动态搜索一样受缩放性 scalability（分辨率 vs 搜索范围）限制。是 Scalable Video Codec - SVC 编码的核心算法之一。</p>
+                    <p>迭代后的高低频用 LL<sub>1</sub> LL<sub>2</sub> LH<sub>1</sub> LH<sub>2</sub> 表示低到高频的顺序，字母位数代表迭代次数。</p>
+                </div>
+                <img src="files/image13.png" alt="Lifting Scheme Temporal Motion Compensation" id="LR-UD-010" class="img-right col-auto" />
+            </div>
+
+            <h4>高斯模糊 Gaussian blur</h4>
+            <p>利用正态分布函数面积不变的特性，通过设定偏差程度 σ 决定正态分布钟的梯度：σ 大则钟扁——滤镜中心分到的权重/面积越被更多分到权/面积的旁像素冲淡模糊掉，设计行业常用。见<a href="https://zh.wikipedia.org/wiki/%E9%AB%98%E6%96%AF%E6%A8%A1%E7%B3%8A">维基百科</a>和<a href="https://www.desmos.com/calculator/jxzs8fz9qr">Desmos互动例</a>。</p>
+            <div class="align-items-center">
+                <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                    <mi> G </mi>
+                    <mrow>
+                        <mo> ( </mo><mi> x </mi><mo> ) </mo>
+                    </mrow>
+                    <mo> = </mo>
+                    <mfrac>
+                        <mrow>
+                            <mn> 1 </mn>
+                        </mrow>
+                        <mrow>
+                            <msqrt>
+                                <mn> 2 </mn>
+                                <mi> &#x03C0; <!-- greek pi --> </mi>
+                                <msup>
+                                    <mrow>
+                                        <mi> &#x03C3; <!-- greek sigma --> </mi>
+                                    </mrow>
+                                    <mrow>
+                                        <mn> 2 </mn>
+                                    </mrow>
+                                </msup>
+                            </msqrt>
+                        </mrow>
+                    </mfrac>
+                    <msup>
+                        <mrow>
+                            <mi> e </mi>
+                        </mrow>
+                        <mrow>
+                            <mo> - </mo>
+                            <mfrac>
+                                <mrow>
+                                    <msup>
+                                        <mrow>
+                                            <mi> x </mi>
+                                        </mrow>
+                                        <mrow>
+                                            <mn> 2 </mn>
+                                        </mrow>
+                                    </msup>
+                                </mrow>
+                                <mrow>
+                                    <mn> 2 </mn>
+                                    <msup>
+                                        <mrow>
+                                            <mi> &#x03C3; <!-- greek sigma --> </mi>
+                                        </mrow>
+                                        <mrow>
+                                            <mn> 2 </mn>
+                                        </mrow>
+                                    </msup>
+                                </mrow>
+                            </mfrac>
+                        </mrow>
+                    </msup>
+                </math>
+            </div>
+            <h4>中值滤镜median filter</h4>
+            <p>和卷积滤镜一样用n×n的滤镜格子逐像素扫图，区别在于滤镜中心会被替换为旁像素的中值。如此一来在扫描窗口任意两端几乎一致的像素值会被识别为线段或边缘，中间的像素值会被同化，而平面上的噪点/颗粒就会被抹除，生成仅有平/斜面和完整线条边缘的“模糊”结果。见<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%80%BC%E6%BB%A4%E6%B3%A2%E5%99%A8">维基百科</a>。</p>
+            <h4>双边滤镜bilateral filter</h4>
+            <p>将中值滤镜输出作为（2D）高斯模糊的权重蒙版（通过矩阵点除实现动态干涉滤镜强度）；因此平面/斜面/线条本身会决定高斯模糊正态分布钟在对应位置被保留/干涉/隔断的程度</p>
+            <img src="files/image14.png" alt="Bilateral Filter" class="" />
+
+            <pre><code>
+<b>--mcstf</b>&lt;开关，默认关，<font class="text-red-emph">会关多线程</font>&gt;时域动态补偿滤镜mctf搭配双阈滤镜的自动降噪，理论上提高细节保真。关多线程会大幅削弱性能
+            </code></pre>
+
+            <h2>溯块向量搜索</h2>
+            <div class="row">
+                <p>与帧内编码并行给动态搜索提供溯块向量（cu帧内/帧间朝向以及大小）的步骤。由于移动的物件会跨越多个 PU ，所以将涉及同个移动物件的 PB 合到一起就能冗余一群 PB 的动态向量。x264/5 用 <font class="text-blue-emph">--ref</font> 参数于时域上划区，逐 PU 创建 L<sub>0</sub> 和 L<sub>1</sub> 左右两排参考列表。x265 在 x264 <font class="text-blue-emph">--direct auto</font> 的基础上添加了 AMVP 与 Merge mode 两个方案</p>
+
+                <h4>高级动态向量搜索 Advanced Motion Vector Prediction</h4>
+                <ol class="mt-0">
+                    <li>在帧内看当前 PU 左下的邻 PU，优先匹配向量往帧内指的邻 PU</li>
+                    <li>参考向量指向其它帧的临 PU；并等比缩放，对齐到邻 PU 已按帧间差异对齐好的向量</li>
+                    <li>若以上步骤没找到参选向量，就把同样的步骤于当前 PU 右上角进行一次</li>
+                    <li>若应了如早批 PU 刚开始算，找不到参选向量的情况下就直接从时域搜索：<ul>
+                        <li class="text-gray-side">照帧间参考图像变化的内容差异做缩放调整，从右下角的相邻 PU 找参选</li>
+                    </ul></li>
+                    <li>若仍不可用，就找当前 PU 中心位置的其它同位 PU；若最后没凑不齐两个参选向量，代入v=0,0</li>
+                </ol>
+
+                <h4>并和搜索模式 Merge Mode</h4>
+                <p id="LR-UD-011" class="col-8">然后用相对简单含糊算法接手剩余块的向量：从帧间，帧内凑五个参选块 candidate，两个备选，少服从多地并和动态向量。（该模式会跳过PU的边缘及当前向量以提速）</p>
+                <img src="files/image15.png" alt="HEVC Merge Mode" id="LR-UD-012" class="img-medium img-right col-4 mb-auto" />
+            </div>
+
+            <pre><code>
+<b>--max-merge</b>&lt;整数0~5，默认2&gt;重设merge mode被选参考块的数量，时间换质量。建议高压编码设<font class="text-blue-emph">4</font>，其它可设<font class="text-blue-emph">2，3</font>
+<b>--early-skip</b>&lt;开关，默认关&gt;先查2nx2n merge被选块，找不到就跳过AMVP以提速
+            </code></pre>
+
+            <h2>初始化-Lookahead</h2>
+            <p>最先运行，给视频帧分段并最终整合成 GOP 内树叉状的参考结构，设关键帧并递给下一步帧内编码。一来冗余，二来防止参考错误蔓延（否则丢一个网络数据包会导致长时间绿屏花屏）。过程见<a href="https://www.nazorip.site/archives/63">x264教程</a></p>
+
+            <pre><code>
+<b>--scenecut</b>&lt;整数，不推荐用&gt;Lookahead中两帧差距达到该参数值则触发转场
+<b>--hist-scenecut</b>&lt;开关，默认关，会关scenecut，<font class="text-blue-emph">10与12bit源可能会导致崩溃</font>，推荐8bit下用&gt;亮度平面边缘+颜色直方图SAD阈值触发转场。x265 v3.5+69后编码彩色视频，尤其<a href="https://forum.doom9.org/showthread.php?p=1978502">HDR源中超越scenecut精度~20%</a>，降低了正误判（设I帧，closed-gop下帧间冗余效益降低）和负误判（不设I帧，分为多个带I块的P帧，帧内编码效益降低），因此除黑白视频外推荐。缺点是超过8bit后不稳定，且理论上不应对画质/压缩率有太大影响
+注：hist-threshold参数于x265 v3.5+69被删
+<b>--rc-lookahead</b>&lt;帧数量，范围1~250，推荐keyint÷2&gt;指定cutree的检索帧数，通常设在帧率的2.5~3倍。高则占用内存增加延迟，低则降低压缩率和平均画质。
+注：cutree会自动选择--rc-lookahead和max(--keyint,max(--vbv-maxrate,--bitrate)÷--vbv-bufsize×fps)中最小的值作为检索帧数
+<b>--no-cutree</b>&lt;开关&gt;关闭少见CTU量化增强偏移。可能只有近无损，crf小于16才用的到
+            </code></pre>
+
+            <h4 class="same-line">P/B帧推演-Viterbi最短路径算法</h4><p class="same-line">：见<a href="https://www.nazorip.site/archives/63">x264教程</a></p>
+
+            <pre><code>
+<b>--b-adapt</b>&lt;整数0~2，推荐<font class="text-blue-emph">2</font>&gt;<font class="text-blue-emph">0</font>停用，<font class="text-blue-emph">1</font>快速算法，因当今设备算力够高所以一律<font class="text-blue-emph">2</font>
+<b>--bframe-bias</b>&lt;整数-90~100，推荐默认&gt;设立B帧判定偏移，增大的同时搭配低pbratio可增加B帧数量，用负值搭配高pbratio可以减少B帧数量
+            </code></pre>
+
+            <h4>网络抽象层单元-参数集</h4>
+            <p>Network abstraction layer unit 中含解码配置 profile，level 的数据包。x264 中的视频帧数即 <font class="text-blue-math">sps->vui.i_num_units_in_tick</font> 或 <font class="text-blue-math">sps->vui.i_time_scale÷2</font> 所得（÷1则为分行交错视频）</p>
+            <ul class="text-gray-side">
+                <li>视频参数集video parameter set</li>
+                <li>序列参数集sequence parameter set——-分枝-负责播放时间戳，显加权与其它特定解码要求</li>
+                <li>图参数集picture parameter set————分枝-负责解码信息</li>
+                <li>条带段slice segment—————————分枝-负责防止ctu中的错误传播到整个条带，ctu以上最小的单位</li>
+            </ul>
+
+            <pre><code>
+<b>--opt-qp-pps --opt-ref-list-length-pps</b>&lt;开关，默认关，已知兼容性问题&gt;据上个GOP改动当前PPS中默认的qp/ref参数值，从而整体上优化视频数据结构。尽管符合HEVC标准，但部分解码端，包括视频网站都不这么想
+注：兼容性问题为<a href="https://forum.doom9.org/showthread.php?p=1978837">应该用hev1而非hvc1封装进ISO-BMFF</a>
+<b>--repeat-headers</b>&lt;开关, 默认关&gt;在流未封装的情况下提供SPS，PPS等信息，正常播放HEVC源码
+注：封装文件的科普<a href="https://www.nazorip.site/archives/63">见x264教程</a>
+            </code></pre>
+
+            <h4>流媒体缓冲缓存</h4>
+            <p>视音频在开始播放前预先加载到内存的一段缓冲区。只要存入缓冲区的波动不大就能保证播放在很多条件下的流畅性。视频流则以确保网络设施正常和控制视频码率本身做到流畅</p>
+
+            <h4>Videl Buffer Verifier - 基于缓冲条件的量化控制</h4>
+            <p>手动指定网络/设备下所允许的缓冲速度 kbps 以加大量化压缩，控制 CRF/ABR 模式。与 CRF 一并使用时叫可变码率 Variable Bitrate / VBR 模式。使用时应注意 VBV 完全不理画质，而卡顿的原因可能仅仅是因为 app 客户端的缓存设太小了。</p>
+
+            <pre><code>
+<b>--vbv-bufsize</b>&lt;整数kbps，默认关=0，<font class="text-red-emph">小于maxrate</font>&gt;编码器解出原画后，最多可占的缓存每秒。bufsize÷maxrate=播放时解码出每gop原画帧数的缓冲用时（秒）。<font class="text-blue-emph">值的大小相对于编完GOP平均大小。编码器用到是因为模式决策要解码出每个压缩步骤中的内容与原画作对比用</font>
+<b>--vbv-maxrate</b>&lt;整数kbps，默认关0&gt;峰值红线。用「出缓帧码率-入缓帧码率必≤maxrate"」限制编码器在GOP码率超bufsize，即缓存跑满时压缩超载帧（提高qp值+强降噪至码率合规为止）。当入缓帧较小时，出缓帧就算超maxrate也会因缓存有空而不被压缩。所以有四种状态，需经验判断：
+    · 大：GOP大小=bufsize=2×maxrate，超限后等缓存满再压，避开多数涨落，适合限平均率的串流
+    · 小：GOP大小=bufsize=1×maxrate，超码率限制后直接压，避开部分涨落，适合限峰值的串流
+    · 超：GOP大小&lt;bufsize=1~2×maxrate，超码率限制后直接压，但因视频小/crf大所以没啥作用
+    · 欠：GOP大小&gt;bufsize=1~2×maxrate，超码率限制后直接压，但因视频大/crf小所以全都糊掉
+    · 由于gop多样，4种状态常会出现在同一视频中。buf/max实际控制了这些状态的出现概率
+<b>--crf-max</b>&lt;整数0~51&gt;防止vbv把crf拉太高，但会导致码率失控
+            </code></pre>
+
+            <h4>关键帧</h4>
+            <h5>IDR刷新解码帧 instant decoder refresh</h5>
+            <ul class="text-gray-side text-smaller">
+                <li>自身储存完整图片，但同时还负责GOP间划界分段，播完令解码器清理前GOP缓存的大写I帧</li>
+                <li>清缓存是为了防止参考/内存错误传播，错误可能源自硬件/软件/网络/干扰等</li>
+            </ul>
+            <h5>RAP随机访问点 random access point</h5>
+            <ul class="text-gray-side text-smaller">
+                <li>“访问”代表播出画面前获取数据的过程</li>
+                <li>“任意”代表拖进度条，打开直播，使进度条上任意一点都要正常解码的目的，增加码率提升体验</li>
+            </ul>
+            <h5>CRA/DRA净/脏任意访问 clean/dirty random access</h5>
+            <ul class="text-gray-side text-smaller">
+                <li>open-gop状态下指定包括GOP间划界，GOP内帧间参考，自身储存完整图片的i帧</li>
+                <li>附近的rasl/radl帧与之相对应</li>
+                <li>「脏」指一组含i块的P帧，需要全部解码才能重建出i帧。压缩更高但相比i帧的解码更容易糊（脏）</li>
+            </ul>
+            <h5>BLA断链访问帧 broken link access</h5>
+            <ul class="text-gray-side text-smaller">
+                <li class="mt-0">open-gop间划界，访问不相关/不相连GOP的特殊CRA帧。用于不暂停播放的分辨率切换</li>
+            </ul>
+
+            <pre><code>
+<b>no-open-gop</b>&lt;开关，默认关，建议开&gt;不用cra/bla，增加码率增加兼容性，适合长GOP策略
+<b>--keyint</b>&lt;整数，默认25&gt;判断新发现的转场距上个IDR帧的距离是否短于此值。有两种设定逻辑，而它们给出的画质都一样：
+    · 设5或更高，省了设立一些IDR帧拖慢速度。快速编码/直播环境直接设=keyint
+    · 设1来增加IDR帧，一帧被判做转场本来就意味着前后溯块的价值不高。而P/B帧内可以放置I宏块，x264/5倾向插P/B帧。好处是进度条落点在激烈的动作场面更密集
+<b>--fades</b>&lt;开关，默认关&gt;找流中的虚实渐变fade-in，给小到帧间条带，大到整个帧间范围改用I条带，并根据渐变后最亮的帧重设码率控制历史记录，解决转场致模糊的问题
+注：与weightb殊路同归但效果更强，增加码率更多
+            </code></pre>
+
+            <h4>参考帧</h4>
+            <h5>RASL 任访略前导，RADL 任仿解前导 random access skipping/decoding lead</h5>
+            <ul class="text-gray-side text-smaller">
+                <li>打开直播或用户拖动进度条落在CRA附近，找不到I帧时指定应该解码decode还是略过skip的标签P帧</li>
+            </ul>
+
+            <pre><code>
+<b>--ref</b>&lt;整数1~16，推荐<font class="text-blue-math">fps÷100+3.4</font>&gt;向量溯块前后帧数半径，一图流设<font class="text-blue-emph">1</font>. 要在能溯全所有块的情况下降低参考面积，所以一般设<font class="text-blue-emph">3</font>就不管了
+<b>--radl</b>&lt;整数默认0，小于连续B帧，推荐2~3&gt;原理见上
+<b>--ipratio --pbratio</b>&lt;浮点,默认1.4 1.3&gt;P帧比IDR/I，及B/b帧相比P帧的量化值递增。B帧双向参考能从更多帧中找到参考源，因此量化强度理应最高：
+    · 真人录像片源中保持默认
+    · 动漫片源中连续长B帧出现几率增多，有时会找不到合适的参考源导致画质损失，用<font class="text-blue-emph">1.2</font>或更小分配一定码率
+    · 可据比例换算帧类型的qp，如<font class="text-blue-emph">I-qp17</font>，<font class="text-blue-emph">P-qp20</font>，<font class="text-blue-emph">B-qp22</font>即<font class="text-blue-emph">--qp/crf 17 --ipratio 1.1765 --pbratio 1.1</font>
+<b>--bframes</b>&lt;整数0~16&gt;最多可连续插入的B帧数量：
+    · 一般录像/录屏快速，以及视频剪辑素材设<font class="text-blue-emph">3~6</font>以防止录制和剪辑的解码算力要求过高
+    · 电影片源快速设<font class="text-blue-emph">8</font>左右
+    · 低成本动画片源，或播放设备配置或硬解兼容高的话可设在<font class="text-blue-emph">13</font>左右
+注：bframes大于8，同时keyint大于250会大增内存占用，但也取决于视频分辨率
+            </code></pre>
+
+            <h2>帧内编码</h2>
+            <div class="row">
+                <div id="LR-UD-013" class="col-8">
+                    <p>组成参考源（I帧）+参考帧的帧间结构后，数据会集中到 I帧/ I块上。故先使用单图无损压缩——补偿参考源，平滑（3-tap/ss），和编码 PB（趋平/夹角/DC）三步。补偿解决 PB 位于边角，或等不到其它 CB 编码完成而缺失的参考源；平滑预处理即根据情况，选择 3-tap FIR 或强力平滑滤镜，卷积插值出「纯预测 PU」</p>
+                    <p>以下图预测块 C 为例：缺编码块B处的参考源就用编码块 A 的最右存在参考源做副本，并如法炮制编码块 D 补充 A-B 两块参考源的逻辑；EDAB 四编码块皆缺，则拿编码块 F 的顶部参考源替代；否则参考源皆填像素中值</p>
+                    <p class="text-gray-side mt-0">图：补充参考源的检查顺序。</p>
+                </div>
+                <img src="files/image16.png" alt="HEVC Merge Mode" id="LR-UD-014" class="img-medium img-right col-4 mb-auto" />
+    
+                <div id="LR-UD-015" class="col-8">
+                    <h4>强力平滑滤镜的启用条件</h4>
+                    <ol>
+                        <li>预测块 C 的大小小于 32x32</li>
+                        <li>底-中-顶，及左-中-右三个纵/横向参考源两两差之和小于视频位深，如 8bit 下为 8</li>
+                        <li>非 DC，非平行（夹角 10），非垂直（夹角 26）的帧内编码模式</li>
+                    </ol>
+                    <p class="text-gray-side mt-0">图：强力平滑滤镜的启用条件。</p>
+                </div>
+                <img src="files/image17.png" alt="Strong Intra Smoothing Condition" id="LR-UD-016" class="img-medium img-right col-4 mb-auto" />
+                
+                <div id="LR-UD-017" class="col-8">
+                    <h4>强力平滑滤镜 Strong intra smoothing</h4>
+                    <ol>
+                        <li>从横-纵向两个参考点直接线性插值 lerp 出所有参考点，以及所对应的预测像素 p</li>
+                        <li>缓解了色带问题</li>
+                    </ol>
+                    <p class="text-gray-side mt-0">图：强力平滑滤镜。</p>
+                </div>
+                <img src="files/image18.png" alt="Strong Intra Smoothing Filter" id="LR-UD-018" class="img-medium img-right col-4 mb-auto" />
+                
+                <div id="LR-UD-019" class="col-8">
+                    <h4>3-tap 有限冲击响应 Finite Impulse Reponse 滤镜</h4>
+                    <p>用横向
+                    <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                        <mi> t </mi>
+                        <mrow>
+                            <mo> ( </mo><mi> x </mi><mo> ) </mo>
+                        </mrow>
+                    </math>
+                    与纵向
+                    <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                        <mi> l </mi>
+                        <mrow>
+                            <mo> ( </mo><mi> y </mi><mo> ) </mo>
+                        </mrow>
+                    </math>
+                    各3像素加权平均得预测像素 p，按卷积顺序轮询得到 PU</p>
+                    <p class="text-gray-side mt-0">图：3tap FIR滤镜。</p>
+                    <p>预处理后，用趋平，夹角，或 DC 模式初步编码 PB 到 CB。</p>
+                </div>
+                <img src="files/image19.png" alt="3tap FIR Filter" id="LR-UD-020" class="img-small img-right col-2 mb-auto" />
+
+                <h4>趋平模式Planar</h4>
+                <div id="LR-UD-021" class="col-8">
+                    <p>用双线性插值 Bi-lerp，让左-上过渡为右-下平面。由<font class="text-blue-math"><font class="text-blue-pure">底β</font>×<font class="text-blue-pure">高α</font>+<font class="text-red-pure">底α</font>×<font class="text-red-pure">高β</font>=<font class="text-green-pure">h</font>×<font class="text-green-pure">底γ</font></font>的关系得过渡线<math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                        <mi> h </mi>
+                    </math>
+                    ，
+                    <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                        <mi> t </mi>
+                        <mrow>
+                            <mo> ( </mo><mi> x </mi><mo> , </mo><mi> y </mi><mo> ) </mo>
+                        </mrow>
+                    </math>
+                    再做一遍得过渡线
+                    <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                        <mi> v </mi>
+                        <mrow>
+                            <mo> ( </mo><mi> x </mi><mo> , </mo><mi> y </mi><mo> ) </mo>
+                        </mrow>
+                        <mo> , </mo><mi> h </mi>
+                        <mrow>
+                            <mo> ( </mo><mi> x </mi><mo> , </mo><mi> y </mi><mo> ) </mo>
+                        </mrow>
+                    </math>
+                    ；
+                        <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                            <mi> v </mi>
+                            <mrow>
+                                <mo> ( </mo><mi> x </mi><mo> , </mo><mi> y </mi><mo> ) </mo>
+                            </mrow>
+                        </math>
+                    取平均得预测像素
+                    <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                        <mi> p </mi>
+                    </math>
+                    。</p>
+                    <p class="text-gray-side mt-0">图：得到一个平均预测像素p(x,y)的过程。</p>
+                </div>
+                <img src="files/image20.png" alt="Planar Intra Coding Mode" id="LR-UD-022" class="img-small img-right col-4 mb-auto" />
+
+                <h4>夹角模式 Direct（35种）</h4>
+                <div id="LR-UD-023" class="col-8">
+                    <p>将渐变（斜面）PB 无损压缩为编码块 CB 中全部画面与参考源共角的夹角
+                        <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                            <mi> &#x03B8; <!-- greek theta --> </mi>
+                        </math>
+                        拓补结构。通过穷举所有
+                        <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                            <mi> p </mi>
+                            <mrow>
+                                <mo> ( </mo><mi> x </mi><mo> , </mo><mi> y </mi><mo> ) </mo>
+                            </mrow>
+                        </math>
+                        的夹角以尝试对齐上方横向参考源
+                        <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                            <mi> t </mi><mo> ( </mo><mi> x </mi><mo> ) </mo>
+                        </math>
+                        ，或左侧纵向参考源
+                        <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                            <mi> l </mi><mo> ( </mo><mi> y </mi><mo> ) </mo>
+                        </math>
+                        中差异最小的点
+                        <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                            <mi> t </mi>
+                            <mrow>
+                                <mo> ( </mo><mi> x </mi><mo> &#x00B1; <!-- plus-minus --> </mo><mi> n </mi><mo> ) </mo>
+                            </mrow>
+                        </math>
+                    或纵向的
+                    <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                        <mi> l </mi>
+                        <mrow>
+                            <mo> ( </mo><mi> y </mi><mo> &#x00B1; <!-- plus-minus --> </mo><mi> n </mi><mo> ) </mo>
+                        </mrow>
+                    </math>
+                    构成直角三角。用三角函数
+                    <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                        <mfrac>
+                            <mrow>
+                                <mi> o </mi><mi> p </mi><mi> p </mi>
+                            </mrow>
+                            <mrow>
+                                <mi> a </mi><mi> d </mi><mi> j </mi>
+                            </mrow>
+                        </mfrac>
+                        <mo> = </mo><mi> tan </mi><mi> &#x03B8; <!-- greek theta --> </mi>
+                    </math>
+                    得预测像素
+                    <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                        <mi> p </mi>
+                    </math>
+                    的夹角
+                    <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                        <mi> &#x03B8; <!-- greek theta --> </mi>
+                    </math>
+                    。<font class="text-gray-side mt-0">图：35种共角夹角模式。</font></p>
+                </div>
+
+                <img src="files/image21.png" alt="Directional Coding Modes" id="LR-UD-024" class="img-small img-right col-2 mb-auto" />
+                <div class="align-items-center">
+                    <img src="files/image22.png" alt="Directional Angle Algebra" class="img-small" />
+                    <p class="text-gray-side mt-0">图：大体的精确夹角测算。见<a href="https://www.elecard.com/page/spatial_intra_prediction_in_hevc">Elecard参考书</a></p>
+                </div>
+            </div>
+
+            <h4 class="same-line">量化</h4><p class="same-line">：见<a href="https://www.nazorip.site/archives/63">x264教程</a></p>
+            <h2>率控制-算出量化值 Quantization Parameter</h2>
+            <p>人眼对明暗变化与画面细节程度的感知呈对数㏒状，分别奠定了显示器的伽马曲线映射，以及量化值qp（x轴）到强度qScale（y轴）的强度映射。            <font class="text-gray-side">图：量化值qp到qScale的映射，见<a href="https://www.desmos.com/calculator/vernjiiphf">desmos互动例</a></font>；伽马矫正的科普见<a href="https://www.nazorip.site/archives/63">见x264教程</a>，<a href="https://www.artleds.com/blog/introduction-to-gamma-curves-and-gamma-correction-in-led-pixel-tapes-application">ArtLEDs科普</a>。</font></p>
+            <img src="files/image23.png" alt="Logrithm QP to qScale" class="" />
+            <p>由于当前帧此时还未编码（码率未知），故寻已编码前帧的量化失真程度（越高则后帧理应越复杂），做推演复杂度/模糊复杂度。CRF 越高则除进推演复杂度的分母越大/ABR 越低则分子越小，得到的推演复杂度越低，推演出的 qp 就越高。</p>
+            
+            <div class="mt-3 align-items-center">
+                <table class="table-center">
+                    <tr class="t-border-bottom">
+                        <th class="t-light-gray">cplxSum</th>
+                        <td class="text-smaller">一直于当前与上帧帧间做差并累积<br>总差异先减半一次再添加新的差异程度</td>
+                        <td class="t-light-gray">
+                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                                <mfrac>
+                                    <mrow>
+                                        <mi> c </mi><mi> p </mi><mi> l </mi><mi> x </mi><mi> S </mi><mi> u </mi><mi> m </mi>
+                                        <mrow>
+                                            <mo> [ </mo>
+                                            <msub>
+                                                <mrow>
+                                                    <mi> L </mi>
+                                                </mrow>
+                                                <mrow>
+                                                    <mo> - </mo><mn> 1 </mn>
+                                                </mrow>
+                                            </msub>
+                                            <mo> ] </mo>
+                                        </mrow>
+                                    </mrow>
+                                    <mrow>
+                                        <mn> 2 </mn>
+                                    </mrow>
+                                </mfrac>
+                                <mo> + </mo><mi> S </mi><mi> A </mi><mi> T </mi><mi> D </mi>
+                                <mrow>
+                                    <mo> [ </mo>
+                                    <msub>
+                                        <mrow>
+                                            <mi> L </mi>
+                                        </mrow>
+                                        <mrow>
+                                            <mo> - </mo><mn> 1 </mn>
+                                        </mrow>
+                                    </msub>
+                                    <mo> ] </mo>
+                                </mrow>
+                            </math>
+                        </td>
+                    </tr>
+                    <tr class=" t-border-bottom">
+                        <th class="t-light-gray">cplxCount</th>
+                        <td class="text-smaller">初始为零，用于逐帧加权 cplxBlur 的帧数计<br>÷2 与 cplxSum 同步<br>加权逻辑时越往后参考冗余理应越多的规律</td>
+                        <td class="t-light-gray">
+                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                                <mfrac>
+                                    <mrow>
+                                        <mi> c </mi><mi> p </mi><mi> l </mi><mi> x </mi><mi> C </mi><mi> o </mi><mi> u </mi><mi> n </mi><mi> t </mi>
+                                        <mrow>
+                                            <mo> [ </mo>
+                                            <msub>
+                                                <mrow>
+                                                    <mi> L </mi>
+                                                </mrow>
+                                                <mrow>
+                                                    <mo> - </mo><mn> 1 </mn>
+                                                </mrow>
+                                            </msub>
+                                            <mo> ] </mo>
+                                        </mrow>
+                                    </mrow>
+                                    <mrow>
+                                        <mn> 2 </mn>
+                                    </mrow>
+                                </mfrac>
+                                <mo> + </mo><mn> 1 </mn>
+                            </math>
+                        </td>
+                    </tr>
+                    <tr class="t-border-bottom">
+                        <th class="t-light-gray">cplxBlur</th>
+                        <td class="text-smaller">模糊复杂度。据帧所处推演加权的新 SATD<br>近似 100% 则当前帧复杂度推高（涨势复杂度）<br>可扭转 cplxCount 默认的跌势</td>
+                        <td class="t-light-gray">
+                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                                <mfrac>
+                                    <mrow>
+                                        <mi> c </mi><mi> p </mi><mi> l </mi><mi> x </mi><mi> S </mi><mi> u </mi><mi> m </mi>
+                                    </mrow>
+                                    <mrow><mi> c </mi><mi> p </mi><mi> l </mi><mi> x </mi><mi> C </mi><mi> o </mi><mi> u </mi><mi> n </mi><mi> t </mi>
+                                    </mrow>
+                                </mfrac>
+                            </math>
+                              
+                        </td>
+                    </tr>
+                    <tr class="t-border-bottom">
+                        <th class="t-light-gray">qScale</th>
+                        <td class="text-smaller">GOP 内累计的直线化 qp，或率失真优化量化的拉格朗日值 λ<br>已编码帧的 qp 转 qScale，便于其它参数修改更新</td>
+                        <td class="t-light-gray">
+                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                                <mn> 0.85 </mn><mo> &#x00D7; <!-- multiplication sign --> </mo>
+                                <msup>
+                                    <mrow>
+                                        <mn> 2 </mn>
+                                    </mrow>
+                                    <mrow>
+                                        <mfrac>
+                                            <mrow>
+                                                <mi> q </mi><mi> p </mi><mo> - </mo><mn> 12 </mn>
+                                            </mrow>
+                                            <mrow>
+                                                <mn> 6 </mn>
+                                            </mrow>
+                                        </mfrac>
+                                    </mrow>
+                                </msup>
+                            </math>
+                        </td>
+                    </tr>
+                    <tr class="t-border-bottom">
+                        <th class="t-light-gray">ABR_rate_factor</th>
+                        <td class="text-smaller">GOP 初始值，ABR 下的 qScale（rdoqλ）转 qp</td>
+                        <td class="t-light-gray">
+                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                                <mfrac>
+                                    <mrow>
+                                        <mi> t </mi><mi> a </mi><mi> r </mi><mi> g </mi><mi> e </mi><mi> t </mi><mo> _ </mo><mi> r </mi><mi> a </mi><mi> t </mi><mi> e </mi><mo> _ </mo><mi> w </mi><mi> i </mi><mi> n </mi><mi> d </mi><mi> o </mi><mi> w </mi>
+                                    </mrow>
+                                    <mrow><mi> c </mi><mi> p </mi><mi> l </mi><mi> x </mi><mi> s </mi><mi> u </mi><mi> m </mi>
+                                    </mrow>
+                                </mfrac>
+                            </math>
+                        </td>
+                    </tr>
+                    <tr class="t-border-bottom">
+                        <th class="t-light-gray">ABR_qScaleNew</th>
+                        <td class="text-smaller">据 ABR 控制更新一遍 qScale（rdoqλ）</td>
+                        <td class="t-light-gray">
+                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                                <mfrac>
+                                    <mrow>
+                                        <msup>
+                                            <mrow>
+                                                <mi> q </mi><mn> S </mn><mi> c </mi><mi> a </mi><mi> l </mi><mi> e </mi>
+                                            </mrow>
+                                        </msup>
+                                        <mo> &#x00D7; <!-- multiplication sign --> </mo>
+                                        <mi> o </mi><mi> v </mi><mi> e </mi><mi> r </mi><mi> f </mi><mi> l </mi><mi> o </mi><mi> w </mi>
+                                    </mrow>
+                                    <mrow>
+                                        <mi> A </mi><mi> B </mi><mi> R </mi><mo> _ </mo><mi> r </mi><mi> a </mi><mi> t </mi><mi> e </mi><mi> f </mi><mi> a </mi><mi> c </mi><mi> t </mi><mi> o </mi><mi> r </mi>
+                                    </mrow>
+                                </mfrac>
+                            </math>
+                        </td>
+                    </tr>
+                    <tr class="t-border-bottom">
+                        <th class="t-light-gray">cplxBase</th>
+                        <td class="text-smaller">常数/恒定值。CRF 模式默认的复杂度<br>若用 B 帧编码则 CTU 或宏块数量×120, 否则×80</td>
+                        <td class="t-light-gray">
+                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                                <mi> c </mi><mi> t </mi><mi> u </mi><mo> _ </mo><mi> c </mi><mi> o </mi><mi> u </mi><mi> n </mi><mi> t </mi><mo> &#x00D7; <!-- multiplication sign --> </mo>
+                                <mrow>
+                                    <mo> ( </mo><mi> b </mi><mi> f </mi><mi> r </mi><mi> a </mi><mi> m </mi><mi> e </mi><mo> ? </mo><mn> 120 </mn><mo> : </mo><mn> 80 </mn><mo> ) </mo>
+                                </mrow>
+                            </math>
+                        </td>
+                    </tr>
+                    <tr class="t-border-bottom">
+                        <th class="t-light-gray">CRF_rate_factor</th>
+                        <td class="text-smaller">GOP 内累计，经 cutree，B 帧偏移乘进 qScale 后得到<br> 1-qcomp 与 CRF_qScale 对齐 （仅 cplxBase，cplxBlur运算）</td>
+                        <td class="t-light-gray">
+                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                                <mfrac>
+                                    <mrow>
+                                        <msup>
+                                            <mrow>
+                                                <mrow>
+                                                    <mi> c </mi><mi> p </mi><mi> l </mi><mi> x </mi><mi> B </mi><mi> a </mi><mi> s </mi><mi> e </mi>
+                                                </mrow>
+                                            </mrow>
+                                            <mrow>
+                                                <mn> 1 </mn><mo> - </mo><mi> q </mi><mi> c </mi><mi> o </mi><mi> m </mi><mi> p </mi>
+                                            </mrow>
+                                        </msup>
+                                    </mrow>
+                                    <mrow>
+                                        <mi> q </mi><mi> S </mi><mi> c </mi><mi> a </mi><mi> l </mi><mi> e </mi>
+                                        <mo> &#x00D7; <!-- multiplication sign --> </mo>
+                                        <mo> ( </mo><mi> c </mi><mi> r </mi><mi> f </mi><mo> + </mo><mi> c </mi><mi> u </mi><mi> t </mi><mi> r </mi><mi> e </mi><mi> e </mi><mo> + </mo><mi> b </mi><mi> f </mi><mi> r </mi><mi> a </mi><mi> m </mi><mi> e </mi><mi> s </mi><mo> _ </mo><mi> o </mi><mi> f </mi><mi> f </mi><mi> s </mi><mi> e </mi><mi> t </mi><mo> ) </mo>
+                                    </mrow>
+                                </mfrac>
+                            </math>
+                        </td>
+                    </tr>
+                    <tr class=" t-border-bottom">
+                        <th class="t-light-gray">CRF_qScaleNew</th>
+                        <td class="text-smaller">据 crf_rate_factor 更新当前帧的 qScale（rdoqλ）</td>
+                        <td class="t-light-gray">
+                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                                <mtable columnalign='left'>
+                                    <mtr>
+                                        <mtd>
+                                            <mfrac>
+                                                <mrow>
+                                                    <msup>
+                                                        <mrow>
+                                                            <mrow>
+                                                                <mi> c </mi><mi> p </mi><mi> l </mi><mi> x </mi><mi> B </mi><mi> a </mi><mi> s </mi><mi> e </mi>
+                                                            </mrow>
+                                                        </mrow>
+                                                        <mrow>
+                                                            <mn> 1 </mn><mo> - </mo><mi> q </mi><mi> c </mi><mi> o </mi><mi> m </mi><mi> p </mi>
+                                                        </mrow>
+                                                    </msup>
+                                                </mrow>
+                                                <mrow>
+                                                    <mi> C </mi><mi> R </mi><mi> F </mi><mo> _ </mo><mi> r </mi><mi> a </mi><mi> t </mi><mi> e </mi><mi> f </mi><mi> a </mi><mi> c </mi><mi> t </mi><mi> o </mi><mi> r </mi>
+                                                </mrow>
+                                            </mfrac>
+                                        </mtd>
+                                    </mtr>
+                                </mtable>
+                            </math>
+                        </td>
+                    </tr>
+                    <tr class="t-border-bottom">
+                        <th class="t-light-gray">qp</th>
+                        <td class="text-smaller">qScale（rdoqλ）经调整后得到当前帧的量化值 qp<br>各 qp 对应一套 DCT 变换量化矩阵。qp→qStep 见<a href="https://www.nazorip.site/archives/63">x264教程</a></td>
+                        <td class="t-light-gray">
+                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                                <mn> 6 </mn>
+                                <msub>
+                                    <mrow>
+                                        <mi> log </mi>
+                                    </mrow>
+                                    <mrow>
+                                        <mn> 2 </mn>
+                                    </mrow>
+                                </msub>
+                                <mfrac>
+                                    <mrow>
+                                        <mi> q </mi><mi> S </mi><mi> c </mi><mi> a </mi><mi> l </mi><mi> e </mi><mo> _ </mo><mi> n </mi><mi> e </mi><mi> w </mi>
+                                    </mrow>
+                                    <mrow>
+                                        <mn> 0.85 </mn>
+                                    </mrow>
+                                </mfrac>
+                                <mo> + </mo><mn> 12 </mn>
+                            </math>
+                              
+                        </td>
+                    </tr>
+                </table>
+                <p class="text-gray-side">表：分别以[L<sub>-1</sub>]和[L]表示上帧和当前帧</p>
+            </div>
+
+            <p>经此实现了帧内画面复杂则 qp 低，简则高；同时据用户设定的（对数）强度的动态变化。这种质量判断只有两帧而不宏观，所以引出了各种各样的优化步骤，如 mb/cutree，rdoq 等。</p>
+
+            <h4>CRF 上层模式</h4>
+            <pre><code>
+<b>--crf</b>&lt;浮点范围0~51，默认23&gt;据cplxBlur，cutree，B帧偏移给每帧分配各自 qp 的固定目标质量模式，或简称质量呼应码率模式，统称crf。素材级画质设在16~18，收藏~高压画质设在19~20.5，YouTube是23。由于动画和录像的内容差距，动画比录像要给低点。理论上crf高=量化损失多→率失真优化慢；但测试出来是crf+2则4k 4:4:4 12bit会快~0.5fps
+<b>--qpmin</b>&lt;整数0~51&gt;由于画质和优质参考帧呈正比，所以仅高压环境建议设最高14
+<b>--qpmax</b>&lt;整数0~51&gt;在要用到颜色键，颜色替换等需要清晰物件边缘的滤镜时，可以设<font class="text-blue-emph">26</font>防止录屏时物件的边缘被压缩的太厉害，其他情况永远不如关cu/mbtree
+<b>--qcomp</b>&lt;开关，tune grain时开启&gt;通过cplxBlur抑制qp判断被噪声带偏，胶片颗粒片源用
+<b>--cplxblur</b>&lt;浮点0~100，默认20&gt;第-1帧不存在，无法算出第0帧的cplxBlur所以直接指定
+            </code></pre>
+        </div>
+
+        <!-- Footer -->
+        <footer class="py-3 my-4 align-items-center border-top">
+            <p>
+                联系方式：
+                <a href='https://github.com/iAvoe/'>Github</a>，
+                <a href='https://jq.qq.com/?_wv=1027&k=5YJFXyf'>QQ群：691892901</a>
+            </p>
+            &#x24B8; iAvoe，2024
+        </footer>
+        
+	</body>
+</html>
