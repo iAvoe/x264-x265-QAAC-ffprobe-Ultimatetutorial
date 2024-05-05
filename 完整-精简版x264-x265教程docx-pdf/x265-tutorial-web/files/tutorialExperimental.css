@@ -43,8 +43,8 @@
     src: url('SIMYOU.TTF') format('truetype');
 }
 @font-face {
-    font-family: 'Cambria Math';
-    src: url('cambria.ttc') format('truetype');
+    font-family: 'KaTeX Math';
+    src: url('KaTeX_Main-Regular.ttf') format('truetype');
 }
 
 /* Color Palette and bootstrap font settings */
@@ -92,7 +92,7 @@
     --bs-font-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "SweiGothicL", "Liberation Mono", "Courier New", monospace, "YouYuan";
     --font-style-main: "Zhudou Sans", sans-serif;
     --font-style-side: "YouYuan", "Yuanti SC";
-    --font-style-math: Cambria, 'Cambria Math', Cochin, Georgia, Times, 'Times New Roman', serif;
+    --font-style-math: 'KaTeX Math', Cochin, Georgia, Times, 'Times New Roman', serif;
 }
 
 /* High-level inherited formatting*/
