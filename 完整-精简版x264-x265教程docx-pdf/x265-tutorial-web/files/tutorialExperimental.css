@@ -91,7 +91,11 @@
 }
 
 /* High-level inherited formatting*/
-body { font-family: var(--font-style-main); background-color: #dee2e6; }
+body {
+    font-family: var(--font-style-main);
+    font-size: 1em;
+    background-color: #dee2e6;
+}
 code { font-family: var(--bs-font-monospace); }
 pre { overflow-x: scroll; }
 .font-monospace { font-family: var(--bs-font-monospace) !important; }
