@@ -1282,8 +1282,24 @@ x265.exe --abr-ladder 1440p8000_2160p11000_2160p16000.txt --fps 59.94 --input-de
 
             <h2>率失真优化控制</h2>
             <h4>率失真优化 Rate distortion optimization</h4>
-            <p>多个码率下测得的 cu 失真（编码前后像素值差D)），挑出 R-D 曲线下的平衡区间。由代价函数：</p>
-
+            <p>多个码率下测得的 cu 失真，挑出 R-D 曲线下的平衡区间。由代价函数开销=失真+λ·码率：
+            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
+                <mi> J </mi><mo> = </mo><mi> D </mi><mo> + </mo><mi> &#x03BB; <!-- greek lambda --> </mi><mo> &#x00B7; <!-- middle dot --> </mo><mi> R </mi>
+            </math>
+            实现模式决策。</p>
+            <p>失真 D 用差异平方和 SSE 或总差异 SAD 判断（SSE多取一步平方，使较大的差异呈指数增长）进而分到更多补偿的码率。拉格朗日值λ源于 qp，即 crf，abr 指定的率失真斜率 slope 区间。qp 越大斜度越小：</p>
+            <ul>
+                <li><math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math"><mi> &#x03BB; <!-- greek lambda --> </mi><mo> = </mo><mi> 0 </mi></math>则无斜度，则代价等于失真——码率变而画质不变，宜压缩。</li>
+                <li>λ趋0则开销趋失真——适当压缩就不会影响画质</li>
+                <li>λ>0则开销>失真——保画质收益大于压缩收益，应该保画质</li>
+            </ul>
+            <div class="align-items-center">
+                <img src="files/image26.png" alt="x264 JM RDO Lambda" class="" >
+                <img src="files/image27.png" alt="RDO Lambda Slopes" class="img-medium" >
+                <p class="text-gray-side">图：率失真优化中λ的斜度变化与效果</p>
+                <img src="files/image28.png" alt="RDO qStep Chart" class="img-medium" >
+                <p class="text-gray-side">图：率-失真表格中不断调整并得到“×”的实际效果</p>
+            </div>
         </div>
 
         <!-- Footer -->
