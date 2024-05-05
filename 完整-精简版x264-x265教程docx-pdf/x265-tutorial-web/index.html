@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang='en'>
+<html lang='zh-hans'>
 	<head>
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -1122,8 +1122,8 @@
     · <span class="text-blue-emph">3</span>前加后
 <b>--analysis-reuse-file</b>&lt;路径，默认x265目录下x265_analysis.dat&gt;若使用了2pass-ABR调优，则导入multi-pass-opt-analysis/distortion信息的路径，文件名
 <b>--masking-strength</b>&lt;逗号分隔整数&gt;于sct-awr-qp基础上定制qp偏移量。建议根据低~高成本动漫，真人录像三种情况定制参数值。scenecut-aware-qp的三种方向决定了masking-strength的三种方向。所谓的非参考帧就是参考参考帧的帧，包括B，b，P三种帧
-    · sct-awr-qp=1时写作<span class="text-blue-emph">&lt;转前毫秒(推500)&gt;,&lt;参考±qp&gt;,&lt;非参±qp&gt;</span>
-    · sct-awr-qp=2时写作<span class="text-blue-emph">&lt;转后毫秒(荐500)&gt;,&lt;参考±qp&gt;,&lt;非参±qp&gt;</span>
+    · sct-awr-qp=1时写作<span class="text-blue-emph">&lt;转前毫秒（推500）&gt;,&lt;参考±qp&gt;,&lt;非参±qp&gt;</span>
+    · sct-awr-qp=2时写作<span class="text-blue-emph">&lt;转后毫秒（荐500）&gt;,&lt;参考±qp&gt;,&lt;非参±qp&gt;</span>
     · sct-awr-qp=3时写作<span class="text-blue-emph">&lt;转前毫秒&gt;,&lt;参考±qp&gt;,&lt;非参±qp&gt;,&lt;转后毫秒&gt;,&lt;参考±qp&gt;,&lt;非参±qp&gt;</span>
 注：x265 v3.5移除了scenecut-window，max-qp-delta，qe-delta-ref，qp-delta-nonref
             </code></pre>
@@ -1157,6 +1157,21 @@ x265.exe --abr-ladder 1440p8000_2160p11000_2160p16000.txt --fps 59.94 --input-de
 
             <h2>自适应量化</h2>
             <p>CRF/ABR设定每帧量化/qp后，方差自适应量化variance adaptive quantizer再根据复杂度判断高低频信号，来实现精确到宏块的qp分配过程。讨论时注意aq与vaq的混淆。<a href="https://www.nazorip.site/archives/63">见x264教程</a></p>
+            
+            <pre><code>
+<b>--aq-mode</b>&lt;整数0~3&gt;据原画和crf/abr设定，以及码率不足时（crf&lt;18/低码abr）如何分配qp
+    · <span class="text-blue-emph">1</span>标准自适应量化（急用，简单平面）
+    · <span class="text-blue-emph">2</span>加启用aq-variance，自动调整aq-strength强度（录像-电影以及crf&lt;17推荐）
+    · <span class="text-blue-emph">3</span>加码率不够用时倾向保暗场（接受更明显的涂抹失真）
+    · <span class="text-blue-emph">4</span>加码率不够用时更加倾向保纹理（接受平面上的涂抹失真，<span class="text-red-emph">实验性</span>，很慢）
+<b>--aq-strength</b>&lt;浮点&gt;自适应量化强度。搭配aq-mode，如动漫1:0.8，2:0.9，3:0.7用。录像上可加0.1~0.2，画面混乱/观众难以注意平面时可再增加。注意低成本动漫的平面居多，因此码率不足时反而要妥协纹理
+<b>--hevc-aq</b>&lt;开关&gt;以¼tile而非aq的边缘高频信息实现自适应。据doom9结论<a href="https://forum.doom9.org/showthread.php?p=1925373#post1925373">1</a>，<a href="https://forum.doom9.org/showthread.php?p=1925464">2</a>: hevc-aq比aq 4快且适合动漫，而aq 4更适合录播。目前学术方-官方-第三方间信息较割裂，暂无适解
+<b>--aq-motion</b>&lt;开关，<span class="text-red-emph">实验性</a>&gt;据动态信息微调自适应量化的效果mode和强度strength
+<b>--qg-size</b>&lt;64/32/16/8，默认64，<span class="text-red-emph">≥min-cu-size</span>&gt;偏移蓝，红色色度面相比亮度平面的qp值差异，负值降低量化。如当色度平面的量化太高则可以用这两个参数补偿回来，但x264-5会根据色度平面采样格式（4:2:2，4:4:4）自动设定这些参数。由于编码器一直不擅长深红色，而人眼又对红光敏感，所以可以给红色面设<span class="text-blue-emph">-3</span>左右
+<b>--cbqpoffs --crqpoffs</b>&lt;整数&gt;据动态信息微调自适应量化的效果mode和强度strength
+            </code></pre>
+
+            <h4>x265 jpsdr-mod 参数</h4>
             
         </div>
 
