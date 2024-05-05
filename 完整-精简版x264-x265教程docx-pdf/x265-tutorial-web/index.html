@@ -30,6 +30,7 @@
         <div class="container p-3 mt-3 rounded-9 border-main">
             <h1>x265教程<font class="text-blue-emph"> HTML 完整版</font></h1>
             <p class="text-gray-side">欢迎阅读！若有什么不会的可以加群<a href='https://jq.qq.com/?_wv=1027&k=5YJFXyf'>691892901</a>。本教程仅算盲人摸象的业余分析，仅具备业余参考价值，入门先看x264视频压缩教程综合版。手头需要编码压制不妨搭配急用版教程</p>
+            <p class="text-gray-side">已知问题：目前排版在某些移动版设备的特定浏览器上会溢出</p>
 
             <h3>ffmpeg，VapourSynth，avs2yuv 传递参数</h3>
             <ul class="list-dotless text-gray-side">
@@ -799,7 +800,7 @@
 
             <h4 class="same-line">量化</h4><p class="same-line">：见<a href="https://www.nazorip.site/archives/63">x264教程</a></p>
             <h2>率控制-算出量化值 Quantization Parameter</h2>
-            <p>人眼对明暗变化与画面细节程度的感知呈对数㏒状，分别奠定了显示器的伽马曲线映射，以及量化值qp（x轴）到强度qScale（y轴）的强度映射。            <font class="text-gray-side">图：量化值qp到qScale的映射，见<a href="https://www.desmos.com/calculator/vernjiiphf">desmos互动例</a></font>；伽马矫正的科普见<a href="https://www.nazorip.site/archives/63">见x264教程</a>，<a href="https://www.artleds.com/blog/introduction-to-gamma-curves-and-gamma-correction-in-led-pixel-tapes-application">ArtLEDs科普</a>。</font></p>
+            <p>人眼对明暗变化与画面细节程度的感知呈对数㏒状，分别奠定了显示器的伽马曲线映射，以及量化值qp（x轴）到强度qScale（y轴）的强度映射。            <font class="text-gray-side">图：量化值qp到qScale的映射，见<a href="https://www.desmos.com/calculator/vernjiiphf">desmos互动例</a></font>；伽马矫正的科普见<a href="https://www.nazorip.site/archives/63">x264教程</a>，<a href="https://www.artleds.com/blog/introduction-to-gamma-curves-and-gamma-correction-in-led-pixel-tapes-application">ArtLEDs科普</a>。</font></p>
             <img src="files/image23.png" alt="Logrithm QP to qScale" class="" />
             <p>由于当前帧此时还未编码（码率未知），故寻已编码前帧的量化失真程度（越高则后帧理应越复杂），做推演复杂度/模糊复杂度。CRF 越高则除进推演复杂度的分母越大/ABR 越低则分子越小，得到的推演复杂度越低，推演出的 qp 就越高。</p>
             
@@ -808,7 +809,7 @@
                     <tr class="t-border-bottom">
                         <th class="t-light-gray">cplxSum</th>
                         <td class="text-smaller">一直于当前与上帧帧间做差并累积<br>总差异先减半一次再添加新的差异程度</td>
-                        <td class="t-light-gray">
+                        <td class="t-light-gray px-0">
                             <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
                                 <mfrac>
                                     <mrow>
@@ -849,7 +850,7 @@
                     <tr class=" t-border-bottom">
                         <th class="t-light-gray">cplxCount</th>
                         <td class="text-smaller">初始为零，用于逐帧加权 cplxBlur 的帧数计<br>÷2 与 cplxSum 同步<br>加权逻辑时越往后参考冗余理应越多的规律</td>
-                        <td class="t-light-gray">
+                        <td class="t-light-gray px-0">
                             <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
                                 <mfrac>
                                     <mrow>
@@ -878,7 +879,7 @@
                     <tr class="t-border-bottom">
                         <th class="t-light-gray">cplxBlur</th>
                         <td class="text-smaller">模糊复杂度。据帧所处推演加权的新 SATD<br>近似 100% 则当前帧复杂度推高（涨势复杂度）<br>可扭转 cplxCount 默认的跌势</td>
-                        <td class="t-light-gray">
+                        <td class="t-light-gray px-0">
                             <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
                                 <mfrac>
                                     <mrow>
@@ -894,7 +895,7 @@
                     <tr class="t-border-bottom">
                         <th class="t-light-gray">qScale</th>
                         <td class="text-smaller">GOP 内累计的直线化 qp，或率失真优化量化的拉格朗日值 λ<br>已编码帧的 qp 转 qScale，便于其它参数修改更新</td>
-                        <td class="t-light-gray">
+                        <td class="t-light-gray px-0">
                             <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
                                 <mn> 0.85 </mn><mo> &#x00D7; <!-- multiplication sign --> </mo>
                                 <msup>
@@ -918,7 +919,7 @@
                     <tr class="t-border-bottom">
                         <th class="t-light-gray">ABR_rate_factor</th>
                         <td class="text-smaller">GOP 初始值，ABR 下的 qScale（rdoqλ）转 qp</td>
-                        <td class="t-light-gray">
+                        <td class="t-light-gray px-0">
                             <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
                                 <mfrac>
                                     <mrow>
@@ -933,7 +934,7 @@
                     <tr class="t-border-bottom">
                         <th class="t-light-gray">ABR_qScaleNew</th>
                         <td class="text-smaller">据 ABR 控制更新一遍 qScale（rdoqλ）</td>
-                        <td class="t-light-gray">
+                        <td class="t-light-gray px-0">
                             <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
                                 <mfrac>
                                     <mrow>
@@ -955,7 +956,7 @@
                     <tr class="t-border-bottom">
                         <th class="t-light-gray">cplxBase</th>
                         <td class="text-smaller">常数/恒定值。CRF 模式默认的复杂度<br>若用 B 帧编码则 CTU 或宏块数量×120, 否则×80</td>
-                        <td class="t-light-gray">
+                        <td class="t-light-gray text-smaller px-0">
                             <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
                                 <mi> c </mi><mi> t </mi><mi> u </mi><mo> _ </mo><mi> c </mi><mi> o </mi><mi> u </mi><mi> n </mi><mi> t </mi><mo> &#x00D7; <!-- multiplication sign --> </mo>
                                 <mrow>
@@ -967,7 +968,7 @@
                     <tr class="t-border-bottom">
                         <th class="t-light-gray">CRF_rate_factor</th>
                         <td class="text-smaller">GOP 内累计，经 cutree，B 帧偏移乘进 qScale 后得到<br> 1-qcomp 与 CRF_qScale 对齐 （仅 cplxBase，cplxBlur运算）</td>
-                        <td class="t-light-gray">
+                        <td class="t-light-gray text-smaller px-0">
                             <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
                                 <mfrac>
                                     <mrow>
@@ -994,7 +995,7 @@
                     <tr class=" t-border-bottom">
                         <th class="t-light-gray">CRF_qScaleNew</th>
                         <td class="text-smaller">据 crf_rate_factor 更新当前帧的 qScale（rdoqλ）</td>
-                        <td class="t-light-gray">
+                        <td class="t-light-gray px-0">
                             <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
                                 <mtable columnalign='left'>
                                     <mtr>
@@ -1025,7 +1026,7 @@
                     <tr class="t-border-bottom">
                         <th class="t-light-gray">qp</th>
                         <td class="text-smaller">qScale（rdoqλ）经调整后得到当前帧的量化值 qp<br>各 qp 对应一套 DCT 变换量化矩阵。qp→qStep 见<a href="https://www.nazorip.site/archives/63">x264教程</a></td>
-                        <td class="t-light-gray">
+                        <td class="t-light-gray px-0">
                             <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
                                 <mn> 6 </mn>
                                 <msub>
@@ -1063,6 +1064,102 @@
 <b>--qcomp</b>&lt;开关，tune grain时开启&gt;通过cplxBlur抑制qp判断被噪声带偏，胶片颗粒片源用
 <b>--cplxblur</b>&lt;浮点0~100，默认20&gt;第-1帧不存在，无法算出第0帧的cplxBlur所以直接指定
             </code></pre>
+
+            <h4>ABR 上层模式</h4>
+            <p>编码器自行判断量化程度，尝试压缩到用户定义的平均码率average bitrate上，速度最快</p>
+            <pre><code>
+<b>--bitrate</b>&lt;整数kbps&gt;平均码率。若视频易压缩且码率给高，就会得到码率比设定的片子；反过来低了会不照顾画质强行提高量化，使码率达标。如果给太低则会得到码率不达标，同时画质差的片子。平均码率模式，除2pass分隔，一般推流用的"码率选项"就是这个参数，速度快但同时妥协了压缩
+            </code></pre>
+
+            <h4>SBRC 下层模式-可搭配 CRF/ABR/CRF-VBR/ABR-VBR</h4>
+            <p>分段式率控制 Segment based rate control，实现DASH，M3U8串流（视频平台）用。</p>
+            <pre><code>
+<b>--sbrc</b>&lt;开关，<font class="text-red-emph">需min-keyint=keyint</font>，<font class="text-red-emph"></font>no-open-gop</code>&gt;由于提高了初始CRF值的利用率，所以建议搭配--cplxblur=crf使用
+            </code></pre>
+
+            <h4>CQP 双层模式</h4>
+            <pre><code>
+<b>--qp</b>&lt;整数0~69，<font class="text-red-emph">禁用crf/abr+模式决策+率失真优化</font>&gt;直接设定全局量化强度。影响其后的综合画质下降或码率暴涨，所以除非yuv4:4:4情况下有既定目的，都不建议
+            </code></pre>
+
+            <h4>2pass-ABR 双层模式</h4>
+            <p>先用 CRF 模式分析整个视频总结可压缩信息，后根据 ABR 模式的码率限制统一分配量化值。有 pass 2 给特别高的平均码率，输出最小损失的最小体积近无损模式，以及 pass2 给码率硬限的全局整体压缩模式</p>
+            <pre><code>
+<b>--pass 1</b>&lt;挡位，导出stats数据文件&gt;；<b>--pass 2</b>&lt;挡位，导入stats数据文件&gt;；<b>--stats</b>&lt;路径，默认在x264/5目录下&gt;
+<b>--slow-firstpass</b>&lt;开关&gt;pass1 里不用 fast-intra no-rect no-amp early-skip ref 1 max-merge 1 me dia subme 2 rd 2，或者手动覆盖掉
+            </code></pre>
+
+            <h4>Analysis-2pass-ABR 双层模式</h4>
+            <p>于普通 2pass 基础上让 pass1 的帧内帧间分析结果给到 pass2。</p>
+            <pre><code>
+<b>--analysis-save --analysis-load</b>&lt;路径&gt;指定导入/出analysis信息文件的路径，文件名
+<b>--analysis-save-reuse-level --analysis-load-reuse-level</b>&lt;整数1~10，默认5&gt;指定analysis-save和load的信息量，配合pass1的动态搜索，帧内搜索，参考帧等参数。推荐8
+    · <font class="text-blue-emph">1</font>储存lookahead信息
+    · <font class="text-blue-emph">2==4</font>同时储存帧内/帧间向量格式+参考信息
+    · <font class="text-blue-emph">5==6</font>加rect/amp分块信息
+    · <font class="text-blue-emph">7</font>加8x8cu分块优化信息
+    · <font class="text-blue-emph">8==9</font>加完整8x8cu分块信息
+    · <font class="text-blue-emph">10</font>加所有cu分析信息
+<b>--dynamic-refine</b>&lt;开关，默认关&gt;自动调整refine-inter，x265官方建议搭配refine-intra 4用，相比手动设定提高了压缩
+<b>--refine-inter</b>&lt;整数0~3，默认0&gt;限制帧间块的向量格式，<font class="text-blue-emph">取决于pass1分析结果是否可信，如pass 1只跑了快速搜索的情况</font>
+    · <font class="text-blue-emph">0</font>完全遵从pass1的分块深度和向量格式
+    · <font class="text-blue-emph">1</font>分析所有pass2中与pass1相同分块的向量格式，除2pass中比1pass更大的分块
+    · <font class="text-blue-emph">2</font>一旦找出最佳的动态向量格式就应用于全部的块，2Nx2N块的rect/amp分块全部遵从pass1，仅对merge和2Nx2N划分的块的动态向量信息进行分析
+    · <font class="text-blue-emph">3</font>保持使用pass1的分块程度，仍然搜索向量格式
+<b>--refine-intra</b>&lt;整数0~3，默认0&gt;限制帧间块的向量格式，<font class="text-blue-emph">取决于pass1分析结果是否可信，如pass 1只跑了快速搜索的情况</font>
+    · <font class="text-blue-emph">0~2</font>同上
+    · <font class="text-blue-emph">3</font>保持使用pass1的分块程度，但优化动态向量
+    · <font class="text-blue-emph">4</font>pass1丢弃不用
+<b>--refine-mv</b>&lt;整数1~3&gt;优化分辨率变化情况下pass2的最优动态向量，<font class="text-blue-emph">1</font>仅搜索动态向量周围的动态，<font class="text-blue-emph">2</font>增加搜索AMVP的顶级候选块，<font class="text-blue-emph">3</font>再搜索更多AMVP候选
+<b>--scale-factor</b>&lt;整数1~3&gt;优化分辨率变化情况下pass2的最优动态向量，<font class="text-blue-emph">1</font>仅搜索动态向量周围的动态，<font class="text-blue-emph">2</font>增加搜索AMVP的顶级候选块，<font class="text-blue-emph">3</font>再搜索更多AMVP候选
+<b>--refine-mv-type avc</b>读取API调用的动态信息，目前支持avc大小，使用analyse-reuse模块就用这个参数+avc
+<b>--refine-ctu-distortion</b>&lt;整数0~1&gt;pass 1下用0写，pass 2下用1读取ctu失真信息
+            </code></pre>
+
+            <h4>2pass 转场优化</h4>
+            <pre><code>
+<b>--scenecut-aware-qp</b>&lt;整数，默认关，<font class="text-red-emph">仅pass2</font>&gt;降低转场前/后qp以增加转场画质，类似fades和weightb
+    · <font class="text-blue-emph">1</font>仅转前
+    · <font class="text-blue-emph">2</font>仅转后
+    · <font class="text-blue-emph">3</font>前加后
+<b>--analysis-reuse-file</b>&lt;路径，默认x265目录下x265_analysis.dat&gt;若使用了2pass-ABR调优，则导入multi-pass-opt-analysis/distortion信息的路径，文件名
+<b>--masking-strength</b>&lt;逗号分隔整数&gt;于sct-awr-qp基础上定制qp偏移量。建议根据低~高成本动漫，真人录像三种情况定制参数值。scenecut-aware-qp的三种方向决定了masking-strength的三种方向。所谓的非参考帧就是参考参考帧的帧，包括B，b，P三种帧
+    · sct-awr-qp=1时写作<font class="text-blue-emph">&lt;转前毫秒(推500)&gt;,&lt;参考±qp&gt;,&lt;非参±qp&gt;</font>
+    · sct-awr-qp=2时写作<font class="text-blue-emph">&lt;转后毫秒(荐500)&gt;,&lt;参考±qp&gt;,&lt;非参±qp&gt;</font>
+    · sct-awr-qp=3时写作<font class="text-blue-emph">&lt;转前毫秒&gt;,&lt;参考±qp&gt;,&lt;非参±qp&gt;,&lt;转后毫秒&gt;,&lt;参考±qp&gt;,&lt;非参±qp&gt;</font>
+注：x265 v3.5移除了scenecut-window，max-qp-delta，qe-delta-ref，qp-delta-nonref
+            </code></pre>
+
+            <h4>Analysis-Npass 间调优</h4>
+            <p>在Analysis-pass1~2之间加一步优化计算。实现比普通2pass更精细的码率控制，1~N也行</p>
+            <pre><code>
+<b>--multi-pass-opt-analysis</b>&lt;开关，默认生成x265_analysis.dat，<font class="text-red-emph">需关闭pme/pmode/analysis-save|load</font>&gt;储存/导入每个CTU的参考帧/分块/向量等信息。将信息优化，细化并省去多余计算
+<b>--multi-pass-opt-distortion</b>&lt;开关，<font class="text-red-emph">需关闭pme/pmode/analysis-save|load</font>&gt;根据失真（编码前后画面差）进一步分析qp
+<b>--multi-pass-opt-rps</b>&lt;开关，默认关&gt;将pass1常用的率参数集保存在序列参数集SPS里以加速
+            </code></pre>
+
+            <h4>Analysis-pass2-ABR 天梯模式</h4>
+            <pre><code>
+<b>--abr-ladder</b>&lt;文件名.txt，<a href="https://streaminglearningcenter.com/blogs/the-evolving-encoding-ladder-what-you-need-to-know.html">苹果TN2224</a>，<font class="text-red-emph">实验性</font>&gt;码器内部实现analysis模式2pass abr多规格压制输出。方便平台布置多分辨率版本用。可以把不变参数写进pass1+2，变化的写进txt。
+格式为："[压制名:analysis-load-reuse-level:analysis-load] &lt;参数1+输出文件名1&gt;"
+例：
+x265.exe --abr-ladder 1440p8000_2160p11000_2160p16000.txt --fps 59.94 --input-dep例th 8 --input-csp i420 --min-keyint 60 --keyint 60 --no-open-gop --cutree
+1440p8kb_2160p11kb_2160p16kb.txt {
+[1440p:8:Anld存档1] --input 视频.yuv --input-res 2560x1440 --bitrate 8000 --ssim --psnr --csv 9.csv --csv-log-level 2 --output 1.hevc --scale-factor 2
+[2160p1:0:nil] --input 视频.yuv --input-res 3840x2160 --bitrate 11000 --ssim --psnr --csv 10.csv --csv-log-level 2 --output 2.hevc --scale-factor 2
+[2160p2:10:Anld存档3] --input视频.yuv --input-res 3840x2160 --bitrate 16000 --ssim --psnr --csv 11.csv --csv-log-level 2 --output 3.hevc --scale-factor 0 }
+            </code></pre>
+
+            <h4>近无损与真无损压缩双层模式</h4>
+            <pre><code>
+<b>--lossless<</b>&lt;开关&gt;过分块，动/帧/参搜索，量/自适量化等影响画质的步骤，保留率失真优化以增强参考性能。输出体积特大的原画。相比锁定量化方法，这样更能满足影业与科研用，但不适合个人和一般媒体。真无损导出有很小几率因为参考质量提升而会比近无损小
+<b>--tskip</b>&lt;开关，默认关，<font class="text-red-emph">需rd大于2</font>&gt;4x4 tu上跳过DCT变换，可保留深度分块/纹理密集处的放大细节
+<b>--cu-lossless</b>&lt;开关，默认关&gt;将无损量化cu（qp 4）作为率失真优化的结果选项之一，只要码率管够（符合λ=R/D）就不量化。用更多码率换取原画相似度，无损源能提高参考冗余
+            </code></pre>
+
+            <h2>自适应量化</h2>
+            <p>CRF/ABR设定每帧量化/qp后，方差自适应量化variance adaptive quantizer再根据复杂度判断高低频信号，来实现精确到宏块的qp分配过程。讨论时注意aq与vaq的混淆。<a href="https://www.nazorip.site/archives/63">见x264教程</a></p>
+            
         </div>
 
         <!-- Footer -->
