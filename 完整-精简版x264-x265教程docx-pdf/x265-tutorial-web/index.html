@@ -9,12 +9,14 @@
         <!-- Bootstrap Icons CSS (remote)
             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/span/bootstrap-icons.css" crossorigin="anonymous">
         -->
+        <!-- Basic MathJax Javascript -->
+        <script src="./files/mathJax3-tex-svg.js"></script>
         
         <!-- JavaScript Codes -->
-        <script src="./files/tutorialExperimental.js" defer></script>
+        <script src="./files/tutorial.js" defer></script>
 
         <!-- Custom CSS Codes -->
-        <link rel="stylesheet" href="./files/tutorialExperimental.css">
+        <link rel="stylesheet" href="./files/tutorial.css">
 
         <title>x265 教程 HTML 完整版</title>
 	</head>
@@ -24,7 +26,7 @@
             <p class="text-gray-side">欢迎阅读！若有什么不会的可以加群<a href='https://jq.qq.com/?_wv=1027&k=5YJFXyf'>691892901</a>。本教程仅算盲人摸象的业余分析，仅具备业余参考价值，入门先看x264视频压缩教程综合版。手头需要编码压制不妨搭配急用版教程</p>
             <p class="text-gray-side text-red-emph">点击图片即可更改桌面和移动端的适配排版</p>
 
-            <h3>ffmpeg，VapourSynth，avs2yuv 传递参数</h3>
+            <h4 class="mb-0">ffmpeg，VapourSynth，avs2yuv 传递参数</h4>
             <pre><code>
 ffmpeg -i &lt;源&gt; -an -f yuv4mpegpipe -strict unofficial - | x265 --y4m - --output
 <span class="text-gray-note">ffmpeg -i &lt;源&gt; -an -f rawvideo	- | x265.exe --input-res &lt;宽x高&gt; --fps &lt;整/小/分数&gt; - --output</span>
@@ -786,241 +788,61 @@ x265.exe [命令行] 2> [桌面路径]\报错.txt
                 <table class="table-center">
                     <tr class="t-border-bottom">
                         <th class="t-light-gray px-1">
-                            cplxSum
-                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math text-smaller">
-                                <mfrac>
-                                    <mrow>
-                                        <mi> c </mi><mi> p </mi><mi> l </mi><mi> x </mi><mi> S </mi><mi> u </mi><mi> m </mi>
-                                        <mrow>
-                                            <mo> [ </mo>
-                                            <msub>
-                                                <mrow>
-                                                    <mi> L </mi>
-                                                </mrow>
-                                                <mrow>
-                                                    <mo> - </mo><mn> 1 </mn>
-                                                </mrow>
-                                            </msub>
-                                            <mo> ] </mo>
-                                        </mrow>
-                                    </mrow>
-                                    <mrow>
-                                        <mn> 2 </mn>
-                                    </mrow>
-                                </mfrac>
-                                <mo> + </mo><mi> S </mi><mi> A </mi><mi> T </mi><mi> D </mi>
-                                <mrow>
-                                    <mo> [ </mo>
-                                    <msub>
-                                        <mrow>
-                                            <mi> L </mi>
-                                        </mrow>
-                                        <mrow>
-                                            <mo> - </mo><mn> 1 </mn>
-                                        </mrow>
-                                    </msub>
-                                    <mo> ] </mo>
-                                </mrow>
-                            </math>
+                            cplxSum<span class="text-blue-math">$$\frac{cplxSum\lbrack L_{-1}\rbrack}{2} + SATD\lbrack L_{-1}\rbrack$$</span>
                         </th>
                         <td class="text-smaller">一直于当前与上帧帧间做差并累积，总差异先减半一次再添加新的差异程度</td>
                     </tr>
                     <tr class=" t-border-bottom">
                         <th class="t-light-gray px-1">
-                            cplxCount
-                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math text-smaller">
-                                <mfrac>
-                                    <mrow>
-                                        <mi> c </mi><mi> p </mi><mi> l </mi><mi> x </mi><mi> C </mi><mi> o </mi><mi> u </mi><mi> n </mi><mi> t </mi>
-                                        <mrow>
-                                            <mo> [ </mo>
-                                            <msub>
-                                                <mrow>
-                                                    <mi> L </mi>
-                                                </mrow>
-                                                <mrow>
-                                                    <mo> - </mo><mn> 1 </mn>
-                                                </mrow>
-                                            </msub>
-                                            <mo> ] </mo>
-                                        </mrow>
-                                    </mrow>
-                                    <mrow>
-                                        <mn> 2 </mn>
-                                    </mrow>
-                                </mfrac>
-                                <mo> + </mo><mn> 1 </mn>
-                            </math>
+                            cplxCount<span class="text-blue-math">$$\frac{cplxSum\lbrack L_{-1}\rbrack}{2} + 1$$</span>
                         </th>
                         <td class="text-smaller">初始为零，用于逐帧加权 cplxBlur 的帧数计。÷2 与 cplxSum 同步。加权逻辑时越往后参考冗余理应越多的规律</td>
                     </tr>
                     <tr class="t-border-bottom">
                         <th class="t-light-gray px-1">
-                            cplxBlur
-                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math text-smaller">
-                                <mfrac>
-                                    <mrow>
-                                        <mi> c </mi><mi> p </mi><mi> l </mi><mi> x </mi><mi> S </mi><mi> u </mi><mi> m </mi>
-                                    </mrow>
-                                    <mrow><mi> c </mi><mi> p </mi><mi> l </mi><mi> x </mi><mi> C </mi><mi> o </mi><mi> u </mi><mi> n </mi><mi> t </mi>
-                                    </mrow>
-                                </mfrac>
-                            </math>
+                            cplxBlur<span class="text-blue-math">$$\frac{cplxSum}{cplxCount}$$</span>
                         </th>
                         <td class="text-smaller">模糊复杂度。据帧所处推演加权的新 SATD。近似 100% 则当前帧复杂度推高（涨势复杂度）可扭转 cplxCount 默认的跌势</td>
                     </tr>
                     <tr class="t-border-bottom">
                         <th class="t-light-gray px-1">
-                            qScale
-                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math text-smaller">
-                                <mn> 0.85 </mn><mo> &#x00D7; <!-- multiplication sign --> </mo>
-                                <msup>
-                                    <mrow>
-                                        <mn> 2 </mn>
-                                    </mrow>
-                                    <mrow>
-                                        <mfrac>
-                                            <mrow>
-                                                <mi> q </mi><mi> p </mi><mo> - </mo><mn> 12 </mn>
-                                            </mrow>
-                                            <mrow>
-                                                <mn> 6 </mn>
-                                            </mrow>
-                                        </mfrac>
-                                    </mrow>
-                                </msup>
-                            </math>
+                            qScale<span class="text-blue-math">$$0.85 \times 2^{\frac{qp-12}{6}}$$</span>
                         </th>
                         <td class="text-smaller">GOP 内累计的直线化 qp，或rdoq的拉格朗日值 λ。已编码帧的 qp 转 qScale，便于其它参数修改更新</td>
                     </tr>
                     <tr class="t-border-bottom">
-                        <th class="t-light-gray t-align-left px-1">
-                            ABR_rate_factor
-                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math text-smaller">
-                                <mfrac>
-                                    <mrow>
-                                        <mi> t </mi><mi> a </mi><mi> r </mi><mi> g </mi><mi> e </mi><mi> t </mi><mo> _ </mo><mi> r </mi><mi> a </mi><mi> t </mi><mi> e </mi><mo> _ </mo><mi> w </mi><mi> i </mi><mi> n </mi><mi> d </mi><mi> o </mi><mi> w </mi>
-                                    </mrow>
-                                    <mrow><mi> c </mi><mi> p </mi><mi> l </mi><mi> x </mi><mi> s </mi><mi> u </mi><mi> m </mi>
-                                    </mrow>
-                                </mfrac>
-                            </math>
+                        <th class="t-light-gray px-1">
+                            ABR_rate_factor<span class="text-blue-math">$$\frac{target\_rate\_window}{\text{cplxSum}}$$</span>
                         </th>
                         <td class="text-smaller">GOP 初始值，ABR 下的 qScale（rdoqλ）转 qp</td>
                     </tr>
                     <tr class="t-border-bottom">
-                        <th class="t-light-gray t-align-left px-1">
-                            ABR_qScaleNew
-                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math text-smaller">
-                                <mfrac>
-                                    <mrow>
-                                        <mrow>
-                                            <mi> q </mi><mn> S </mn><mi> c </mi><mi> a </mi><mi> l </mi><mi> e </mi>
-                                        </mrow>
-                                        <mo> &#x00D7; <!-- multiplication sign --> </mo>
-                                        <mi> o </mi><mi> v </mi><mi> e </mi><mi> r </mi><mi> f </mi><mi> l </mi><mi> o </mi><mi> w </mi>
-                                    </mrow>
-                                    <mrow>
-                                        <mi> A </mi><mi> B </mi><mi> R </mi><mo> _ </mo><mi> r </mi><mi> a </mi><mi> t </mi><mi> e </mi><mi> f </mi><mi> a </mi><mi> c </mi><mi> t </mi><mi> o </mi><mi> r </mi>
-                                    </mrow>
-                                </mfrac>
-                            </math>
+                        <th class="t-light-gray px-1">
+                            ABR_qScaleNew<span class="text-blue-math">$$\frac{qscale \times \text{overflow}}{ABR\_rate\_factor}$$</span>
                         </th>
                         <td class="text-smaller">据 ABR 控制更新一遍 qScale（rdoqλ）</td>
                     </tr>
                     <tr class="t-border-bottom">
                         <th class="t-light-gray px-1">
-                            cplxBase
-                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math text-smaller">
-                                <mi> c </mi><mi> t </mi><mi> u </mi><mo> _ </mo><mi> c </mi><mi> o </mi><mi> u </mi><mi> n </mi><mi> t </mi><mo> &#x00D7; <!-- multiplication sign --> </mo>
-                                <mrow>
-                                    <mo> ( </mo><mi> b </mi><mi> f </mi><mi> r </mi><mi> a </mi><mi> m </mi><mi> e </mi><mo> ? </mo><mn> 120 </mn><mo> : </mo><mn> 80 </mn><mo> ) </mo>
-                                </mrow>
-                            </math>
+                            cplxBase<span class="text-blue-math">$$ctu\_count \times (bframe?120:80)$$</span>
                         </th>
                         <td class="text-smaller">常数/恒定值。CRF 模式默认的复杂度。若用 B 帧编码则 CTU 或宏块数量×120, 否则×80</td>
                     </tr>
                     <tr class="t-border-bottom">
                         <th class="t-light-gray px-1">
-                            CRF_rate_factor
-                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math text-smaller">
-                                <mfrac>
-                                    <mrow>
-                                        <msup>
-                                            <mrow>
-                                                <mrow>
-                                                    <mi> c </mi><mi> p </mi><mi> l </mi><mi> x </mi><mi> B </mi><mi> a </mi><mi> s </mi><mi> e </mi>
-                                                </mrow>
-                                            </mrow>
-                                            <mrow>
-                                                <mn> 1 </mn><mo> - </mo><mi> q </mi><mi> c </mi><mi> o </mi><mi> m </mi><mi> p </mi>
-                                            </mrow>
-                                        </msup>
-                                    </mrow>
-                                    <mrow>
-                                        <mi> q </mi><mi> S </mi><mi> c </mi><mi> a </mi><mi> l </mi><mi> e </mi>
-                                        <mo> &#x00D7; <!-- multiplication sign --> </mo>
-                                        <mo> ( </mo><mi> c </mi><mi> r </mi><mi> f </mi><mo> + </mo><mi> c </mi><mi> u </mi><mi> t </mi><mi> r </mi><mi> e </mi><mi> e </mi><mo> + </mo><mi> b </mi><mi> f </mi><mi> r </mi><mi> a </mi><mi> m </mi><mi> e </mi><mi> s </mi><mo> _ </mo><mi> o </mi><mi> f </mi><mi> f </mi><mi> s </mi><mi> e </mi><mi> t </mi><mo> ) </mo>
-                                    </mrow>
-                                </mfrac>
-                            </math> 
+                            CRF_rate_factor<span class="text-blue-math">$$\frac{cplxBase^{1-qcomp}}{qScale \times (crf + cutree + bframe\_offset)}$$</span>
                         </th>
                         <td class="text-smaller">GOP 内累计，经 cutree，B 帧偏移乘进 qScale 后得 1-qcomp 与 CRF_qScale 对齐 （仅 cplxBase，cplxBlur运算）</td>
                     </tr>
                     <tr class=" t-border-bottom">
                         <th class="t-light-gray px-1">
-                            CRF_qScaleNew
-                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math text-smaller">
-                                <mtable columnalign='left'>
-                                    <mtr>
-                                        <mtd>
-                                            <mfrac>
-                                                <mrow>
-                                                    <msup>
-                                                        <mrow>
-                                                            <mrow>
-                                                                <mi> c </mi><mi> p </mi><mi> l </mi><mi> x </mi><mi> B </mi><mi> a </mi><mi> s </mi><mi> e </mi>
-                                                            </mrow>
-                                                        </mrow>
-                                                        <mrow>
-                                                            <mn> 1 </mn><mo> - </mo><mi> q </mi><mi> c </mi><mi> o </mi><mi> m </mi><mi> p </mi>
-                                                        </mrow>
-                                                    </msup>
-                                                </mrow>
-                                                <mrow>
-                                                    <mi> C </mi><mi> R </mi><mi> F </mi><mo> _ </mo><mi> r </mi><mi> a </mi><mi> t </mi><mi> e </mi><mi> f </mi><mi> a </mi><mi> c </mi><mi> t </mi><mi> o </mi><mi> r </mi>
-                                                </mrow>
-                                            </mfrac>
-                                        </mtd>
-                                    </mtr>
-                                </mtable>
-                            </math>
+                            CRF_qScaleNew<span class="text-blue-math">$$\frac{cplxBlur^{1-qcomp}}{CRF\_rate\_factor}$$</span>
                         </th>
                         <td class="text-smaller">据 crf_rate_factor 更新当前帧的 qScale（rdoqλ）</td>
                     </tr>
                     <tr class="t-border-bottom">
                         <th class="t-light-gray px-1">
-                            qp
-                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math text-smaller t-align-right">
-                                <mn> 6 </mn>
-                                <msub>
-                                    <mrow>
-                                        <mi> log </mi>
-                                    </mrow>
-                                    <mrow>
-                                        <mn> 2 </mn>
-                                    </mrow>
-                                </msub>
-                                <mfrac>
-                                    <mrow>
-                                        <mi> q </mi><mi> S </mi><mi> c </mi><mi> a </mi><mi> l </mi><mi> e </mi><mo> _ </mo><mi> n </mi><mi> e </mi><mi> w </mi>
-                                    </mrow>
-                                    <mrow>
-                                        <mn> 0.85 </mn>
-                                    </mrow>
-                                </mfrac>
-                                <mo> + </mo><mn> 12 </mn>
-                            </math>
+                            qp<span class="text-blue-math">$$6\log_{2}{\frac{qscale\_ new}{0.85} + 12}$$</span>
                         </th>
                         <td class="text-smaller">qScale（rdoqλ）经调整后得到当前帧的量化值 qp。各 qp 对应一套 DCT 变换量化矩阵。qp→qStep 见<a href="https://www.nazorip.site/archives/63">x264教程</a></td>
                     </tr>
@@ -1163,56 +985,56 @@ x265.exe --abr-ladder 1440p8000_2160p11000_2160p16000.txt --fps 59.94 --input-de
                     </thead>
                     <tbody>
                         <tr class="t-border-bottom t-light-gray">
-                            <td>1</td>
+                            <td class="text-blue-emph">1</td>
                             <td>√</td>
                             <td> </td>
                             <td> </td>
                             <td> </td>
                         </tr>
                         <tr class="t-border-bottom">
-                            <td>2,3</td>
+                            <td class="text-blue-emph">2,3</td>
                             <td>√</td>
                             <td>√</td>
                             <td> </td>
                             <td> </td>
                         </tr>
                         <tr class="t-border-bottom t-light-gray">
-                            <td>4</td>
+                            <td class="text-blue-emph">4</td>
                             <td>√</td>
                             <td> </td>
                             <td>√</td>
                             <td> </td>
                         </tr>
                         <tr class="t-border-bottom">
-                            <td>8</td>
+                            <td class="text-blue-emph">8</td>
                             <td>√</td>
                             <td> </td>
                             <td> </td>
                             <td>√</td>
                         </tr>
                         <tr class="t-border-bottom t-light-gray">
-                            <td>6</td>
+                            <td class="text-blue-emph">6</td>
                             <td>√</td>
                             <td>√</td>
                             <td>√</td>
                             <td> </td>
                         </tr>
                         <tr class="t-border-bottom">
-                            <td>10</td>
+                            <td class="text-blue-emph">10</td>
                             <td>√</td>
                             <td>√</td>
                             <td> </td>
                             <td>√</td>
                         </tr>
                         <tr class="t-border-bottom t-light-gray">
-                            <td>12</td>
+                            <td class="text-blue-emph">12</td>
                             <td>√</td>
                             <td> </td>
                             <td>√</td>
                             <td>√</td>
                         </tr>
                         <tr class="t-border-bottom">
-                            <td>14</td>
+                            <td class="text-blue-emph">14</td>
                             <td>√</td>
                             <td>√</td>
                             <td>√</td>
@@ -1259,16 +1081,15 @@ x265.exe --abr-ladder 1440p8000_2160p11000_2160p16000.txt --fps 59.94 --input-de
 
             <h2>率失真优化控制</h2>
             <h4>率失真优化 Rate distortion optimization</h4>
-            <p>多个码率下测得的 cu 失真，挑出 R-D 曲线下的平衡区间。由代价函数开销=失真+λ·码率：
-            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
-                <mi> J </mi><mo> = </mo><mi> D </mi><mo> + </mo><mi> &#x03BB; <!-- greek lambda --> </mi><mo> &#x00B7; <!-- middle dot --> </mo><mi> R </mi>
-            </math>
-            实现模式决策。</p>
+            <p>
+                多个码率下测得的 cu 失真，挑出 R-D 曲线下的平衡区间。由代价函数「开销=失真+λ⋅码率」实现模式决策：
+                <span class="text-blue-math">$$J = D + \lambda \cdot R$$</span>
+            </p>
             <p>失真 D 用差异平方和 SSE 或总差异 SAD 判断（SSE多取一步平方，使较大的差异呈指数增长）进而分到更多补偿的码率。拉格朗日值λ源于 qp，即 crf，abr 指定的率失真斜率 slope 区间。qp 越大斜度越小：</p>
             <ul>
                 <li><math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math"><mi> &#x03BB; <!-- greek lambda --> </mi><mo> = </mo><mi> 0 </mi></math>则无斜度，则代价等于失真——码率变而画质不变，宜压缩。</li>
-                <li>λ趋0则开销趋失真——适当压缩就不会影响画质</li>
-                <li>λ>0则开销>失真——保画质收益大于压缩收益，应该保画质</li>
+                <li><span class="text-blue-math">λ</span> 趋0则开销趋失真——适当压缩就不会影响画质</li>
+                <li><span class="text-blue-math">λ &gt; 0</span> 则开销&gt;失真——保画质收益大于压缩收益，应该保画质</li>
             </ul>
             <div class="align-items-center">
                 <img src="files/image26.png" alt="x264 JM RDO Lambda" class="" >
@@ -1280,253 +1101,18 @@ x265.exe --abr-ladder 1440p8000_2160p11000_2160p16000.txt --fps 59.94 --input-de
 
             <ul>
                 <li>
-                    x265的失真（块间差异）用均差异平方 Mean Squared Error（MSE）判断：<ul>
-                        <li>
-                            <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
-                                <mfrac>
-                                    <mrow>
-                                        <mn> 1 </mn>
-                                    </mrow>
-                                    <mrow>
-                                        <mi> x </mi><mi> y </mi>
-                                    </mrow>
-                                </mfrac>
-                                <munder>
-                                    <mrow>
-                                        <mo> &#x2211; <!-- n-ary summation --> </mo>
-                                    </mrow>
-                                    <mrow>
-                                        <msub>
-                                            <mrow>
-                                                <mi> x </mi>
-                                            </mrow>
-                                            <mrow>
-                                                <mn> 0 </mn>
-                                            </mrow>
-                                        </msub>
-                                        <mo> &#x2192; <!-- right arrow --> </mo>
-                                        <msub>
-                                            <mrow>
-                                                <mi> T </mi>
-                                            </mrow>
-                                            <mrow>
-                                                <mi> x </mi>
-                                            </mrow>
-                                        </msub>
-                                    </mrow>
-                                </munder>
-                                <munder>
-                                    <mrow>
-                                        <mo> &#x2211; <!-- n-ary summation --> </mo>
-                                    </mrow>
-                                    <mrow>
-                                        <msub>
-                                            <mrow>
-                                                <mi> y </mi>
-                                            </mrow>
-                                            <mrow>
-                                                <mn> 0 </mn>
-                                            </mrow>
-                                        </msub>
-                                        <mo> &#x2192; <!-- right arrow --> </mo><mi> T </mi><mi> y </mi>
-                                    </mrow>
-                                </munder>
-                                <msup>
-                                    <mrow>
-                                        <mrow>
-                                            <mo> | </mo><mi> f </mi>
-                                            <mrow>
-                                                <mo> ( </mo><mi> x </mi><mo> , </mo><mi> y </mi><mo> ) </mo>
-                                            </mrow>
-                                            <mo> - </mo>
-                                            <msup>
-                                                <mrow>
-                                                    <mi> f </mi>
-                                                </mrow>
-                                                <mrow>
-                                                    <mo> ’ </mo>
-                                                </mrow>
-                                            </msup>
-                                            <mrow>
-                                                <mo> ( </mo><mi> x </mi><mo> , </mo><mi> y </mi><mo> ) </mo>
-                                            </mrow>
-                                            <mo> | </mo>
-                                        </mrow>
-                                    </mrow>
-                                    <mrow>
-                                        <mn> 2 </mn>
-                                    </mrow>
-                                </msup>
-                            </math>
-                        </li>
-                    </ul>
+                    x265的失真（块间差异）用均差异平方 Mean Squared Error（MSE）判断：<span class="text-blue-math">$$\frac{1}{xy}\sum_{}^{}{x_{0 \rightarrow Tx}\sum_{}^{}{y_{0 \rightarrow Ty}\ |f(x,y) - f\prime(x,y)|^2}}$$</span>
                 </li>
 
-                <li>x264 中默认用更快的差异平方和 Sum of Squared Error（SSE），或Sum of Squared Difference（SSD）:<ul>
-                    <li>
-                        <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
-                            <munder>
-                                <mrow>
-                                    <mo> &#x2211; <!-- n-ary summation --> </mo>
-                                </mrow>
-                                <mrow>
-                                    <msub>
-                                        <mrow>
-                                            <mi> x </mi>
-                                        </mrow>
-                                        <mrow>
-                                            <mn> 0 </mn>
-                                        </mrow>
-                                    </msub>
-                                    <mo> &#x2192; <!-- right arrow --> </mo>
-                                    <msub>
-                                        <mrow>
-                                            <mi> T </mi>
-                                        </mrow>
-                                        <mrow>
-                                            <mi> x </mi>
-                                        </mrow>
-                                    </msub>
-                                </mrow>
-                            </munder>
-                            <munder>
-                                <mrow>
-                                    <mo> &#x2211; <!-- n-ary summation --> </mo>
-                                </mrow>
-                                <mrow>
-                                    <msub>
-                                        <mrow>
-                                            <mi> y </mi>
-                                        </mrow>
-                                        <mrow>
-                                            <mn> 0 </mn>
-                                        </mrow>
-                                    </msub>
-                                    <mo> &#x2192; <!-- right arrow --> </mo><mi> T </mi><mi> y </mi>
-                                </mrow>
-                            </munder>
-                            <msup>
-                                <mrow>
-                                    <mrow>
-                                        <mo> | </mo><mi> f </mi>
-                                        <mrow>
-                                            <mo> ( </mo><mi> x </mi><mo> , </mo><mi> y </mi><mo> ) </mo>
-                                        </mrow>
-                                        <mo> - </mo>
-                                        <msup>
-                                            <mrow>
-                                                <mi> f </mi>
-                                            </mrow>
-                                            <mrow>
-                                                <mo> ’ </mo>
-                                            </mrow>
-                                        </msup>
-                                        <mrow>
-                                            <mo> ( </mo><mi> x </mi><mo> , </mo><mi> y </mi><mo> ) </mo>
-                                        </mrow>
-                                        <mo> | </mo>
-                                    </mrow>
-                                </mrow>
-                                <mrow>
-                                    <mn> 2 </mn>
-                                </mrow>
-                            </msup>
-                        </math>
-                    </li>
-                </ul>
+                <li>
+                    x264 中默认用更快的差异平方和 Sum of Squared Error（SSE），或Sum of Squared Difference（SSD）:
+                    <span class="text-blue-math">$$\sum_{}^{}{x_{0 \rightarrow Tx}\sum_{}^{}{y_{0 \rightarrow Ty}\ |f(x,y) - f\prime(x,y)|^2}}$$</span>
+                </li>
 
-                <li>x264 中还可选用画质优先的高频加权总差方/噪声加权总差异平方 Noise SSE:<ul>
-                    <li>
-                        <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
-                            <munder>
-                                <mrow>
-                                    <mo> &#x2211; <!-- n-ary summation --> </mo>
-                                </mrow>
-                                <mrow>
-                                    <msub>
-                                        <mrow>
-                                            <mi> x </mi>
-                                        </mrow>
-                                        <mrow>
-                                            <mn> 0 </mn>
-                                        </mrow>
-                                    </msub>
-                                    <mo> &#x2192; <!-- right arrow --> </mo>
-                                    <msub>
-                                        <mrow>
-                                            <mi> T </mi>
-                                        </mrow>
-                                        <mrow>
-                                            <mi> x </mi>
-                                        </mrow>
-                                    </msub>
-                                </mrow>
-                            </munder>
-                            <munder>
-                                <mrow>
-                                    <mo> &#x2211; <!-- n-ary summation --> </mo>
-                                </mrow>
-                                <mrow>
-                                    <msub>
-                                        <mrow>
-                                            <mi> y </mi>
-                                        </mrow>
-                                        <mrow>
-                                            <mn> 0 </mn>
-                                        </mrow>
-                                    </msub>
-                                    <mo> &#x2192; <!-- right arrow --> </mo><mi> T </mi><mi> y </mi>
-                                </mrow>
-                            </munder>
-                            <mrow>
-                                <mrow>
-                                    <mo> | </mo>
-                                    <mrow>
-                                        <mo> [ </mo><mi> N </mi><mo> ( </mo><mi> x </mi><mo> , </mo><mi> y </mi><mo> ) </mo>
-                                    </mrow>
-                                    <mo> - </mo>
-                                    <msup>
-                                        <mrow>
-                                            <mi> N </mi>
-                                        </mrow>
-                                        <mrow>
-                                            <mo> ’ </mo>
-                                        </mrow>
-                                    </msup>
-                                    <mrow>
-                                        <mo> ( </mo><mi> x </mi><mo> , </mo><mi> y </mi><mo> ) </mo><mo> ] </mo><mo> &#x00B7; <!-- middle dot --> </mo><mi> f </mi><mi> g </mi><mi> o </mi><mo> | </mo>
-                                    </mrow>
-                                </mrow>
-                                <mo> + </mo>
-                                <msup>
-                                    <mrow>
-                                        <mrow>
-                                            <mo> | </mo><mi> f </mi>
-                                            <mrow>
-                                                <mo> ( </mo><mi> x </mi><mo> , </mo><mi> y </mi><mo> ) </mo>
-                                            </mrow>
-                                            <mo> - </mo>
-                                            <msup>
-                                                <mrow>
-                                                    <mi> f </mi>
-                                                </mrow>
-                                                <mrow>
-                                                    <mo> ’ </mo>
-                                                </mrow>
-                                            </msup>
-                                            <mrow>
-                                                <mo> ( </mo><mi> x </mi><mo> , </mo><mi> y </mi><mo> ) </mo>
-                                            </mrow>
-                                            <mo> | </mo>
-                                        </mrow>
-                                    </mrow>
-                                    <mrow>
-                                        <mn> 2 </mn>
-                                    </mrow>
-                                </msup>
-                            </mrow>
-                        </math>
-                    </li>
+                <li>
+                    x264 中还可选用画质优先的高频加权总差方/噪声加权总差异平方 Noise SSE：
+                    <span class="text-blue-math">$$\sum_{}^{}{x_{0 \rightarrow Tx}\sum_{}^{}{y_{0 \rightarrow Ty}\ \left| \left\lbrack N(x,y) - \ N\prime(x,y) \right\rbrack \cdot fgo \right| + |f(x,y) - f\prime(x,y)|^2}}$$</span>
+                </li>
                     <li class="text-gray-side">
                         <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-smaller">
                             <munder>
@@ -1580,7 +1166,7 @@ x265.exe --abr-ladder 1440p8000_2160p11000_2160p16000.txt --fps 59.94 --input-de
                         代表块中各个像素值的坐标
                     </li>
 
-                    <li class="text-gray-side">| |求绝对值以正常求和</li>
+                    <li class="text-gray-side">| | 求绝对值以正常求和</li>
             </ul>
 
             <h4>优化策略-随量化强度增加而增加</h4>
@@ -1621,48 +1207,61 @@ x265.exe --abr-ladder 1440p8000_2160p11000_2160p16000.txt --fps 59.94 --input-de
 
             <h4>峰值信噪比 Peak signal-noise ratio PSNR</h4>
             <p>不只是人眼对光压的感知，包括痛觉冷热音量等强度的感知皆呈对数㏒状，因此对数被用于统计信号强度，如突出重点范围变化的分贝 dB 表示。信噪比 SNR 即「信号÷噪声」，用于测量处理传输变换信号的有效信息所剩。使用㏒统计还有在坐标系中撇开信噪比太好太差数据（指数增长缩放成线性增长）的效果。</p>
-            <p class="align-items-center">
-                <math xmlns='http://www.w3.org/1998/Math/MathML' class="text-blue-math">
-                    <mi> P </mi><mi> S </mi><mi> N </mi><mi> R </mi>
-                    <mrow>
-                        <mo> ( </mo><mn> 8 </mn><mi> b </mi><mi> i </mi><mi> t </mi><mo> ) </mo>
-                    </mrow>
-                    <mo> = </mo>
-                    <mn> 10 </mn>
-                    <msub>
-                        <mrow>
-                            <mi> log </mi>
-                        </mrow>
-                        <mrow>
-                            <mn> 10 </mn>
-                        </mrow>
-                    </msub>
-                    <mfrac>
-                        <mrow>
-                            <msup>
-                                <mrow>
-                                    <mn> 2 </mn>
-                                </mrow>
-                                <mrow>
-                                    <mn> 8 </mn><mi> b </mi><mi> i </mi><mi> t </mi>
-                                </mrow>
-                            </msup>
-                            <mo> - </mo><mn> 1 </mn>
-                        </mrow>
-                        <mrow>
-                            <mi> M </mi><mi> S </mi><mi> E </mi>
-                        </mrow>
-                    </mfrac>
-                    <mrow>
-                        <mo> ( </mo><mi> d </mi><mi> B </mi><mo> ) </mo>
-                    </mrow>
-                </math>
+            <p class="text-blue-math">$$PSNR_{8bit} = 10 \log_{10} \left( \frac{2^{8bit}-1}{MSE} \right) \, \text{(dB)}$$</p>
             </p>
 
             <ul class="text-gray-side">
                 <li>PSNR用来判断编码前后的画面差距，此处画面差异记为均差异平方 MSE</li>
                 <li>右侧减1代表从0开始数，㏒<sub>10</sub>对齐十进制</li>
             </ul>
+
+            <h2>去块滤镜</h2>
+            <p>修复高量化时宏块间出现明显横纵割痕瑕疵的平滑滤镜。编码器内去块利用了之前搜索到的信息而相比外部滤镜误判更少，但大体上就是检查1像素宽，且周围没有较大高度/像素值变化的横纵边缘，所以误判也不可避免。</p>
+            <p>块失真源自块间不统一的量化程度。而去块手段是平滑滤镜, 因此要降低强度才适用于高码视频, 动漫, 素材录屏等锐利画面. 边界强度 Boundary strength（去块力度判断）</p>
+            <div class="align-items-center">
+                <img src="files/image32.png" alt="Deblock detection visualization" class="img-medium" >
+                <img src="files/image33.png" alt="Deblock edge visualization" class="img-medium" >
+                <p class="text-gray-side">图：取最小8x8范围（两个4x4 CU）间的界线举例。</p>
+            </div>
+
+            <ul>
+                <li>平滑4：a与1皆为帧内块，且边界位于CTU/宏块间，最强滤镜值</li>
+                <li>平滑3：a或1皆为帧内块，但边界不在CTU/宏块间</li>
+                <li>平滑2：a与1皆非帧内块，含一参考源/已编码系子</li>
+                <li>平滑1：a与1皆非帧内块，皆无参考源/已编码系子，溯异帧或动态向量相异</li>
+                <li>平滑0：a与1皆非帧内块，皆无参考源/已编码系子，溯同帧或动态向量相同，滤镜关</li>
+            </ul>
+            <pre><code>
+<b>--deblock</b>&lt;浮点偏移值，平滑强度:搜索精度，默认1:0，推荐0:0，-1:-1，-2:-1&gt;两值于原有强度上增减
+    · 平滑<span class="text-blue-emph">≥1</span>时用以压缩
+    · 平滑<span class="text-blue-emph">-2~-1</span>时略降锐度，适合串流
+    · 平滑<span class="text-blue-emph">2</span>适合锐利视频源，4k电影，游戏录屏。提高码率且会出现块失真
+    · 平滑<span class="text-blue-emph">-3~-2</span>适合高码动画源/桌面录屏。增块失真，但观感还是比1好
+    · 搜索<span class="text-blue-emph">大于2</span>易误判；<span class="text-blue-emph">小于1</span>会遗漏。建议保持<span class="text-blue-emph">0~-1</span>，除非qp大于26时设<span class="text-blue-emph">1</span>
+            </code></pre>
+
+            <h2>环路滤波-取样迁就偏移</h2>
+            <p>Sample adaptive offset 滤镜。逐 CTB 划分。界偏移EO缓解纹理边缘因「高频波形的遮盖因强量化或去块丢失」的问题。可能分以下几步。算法略像帧内搜索的趋平滤镜。适合修复纹理量化出振铃的损失。关闭则遮不住平面的蠕虫失真</p>
+            <ul class="text-gray-side">
+                <li>CTB内据分块结果建立一批3x3像素的采样域</li>
+                <li>由3x3排列规律找出三个像素排成一排的横0，纵1，左倾2和右倾3四种可能</li>
+                <li>中心像素值要符合小于/大于旁像素且等于任意一边像素的条件，否则不是边界</li>
+                <li>确保3x3间的边界连续性，实现边界验证和性能优化(?)</li>
+            </ul>
+            <p>带偏移 BO 是对比源+补偿编码差异的平面 CTB 滤镜，适合补偿平面，斜面和曲面渐变 CU，以及修复平面量化的损失。方法是：</p>
+            <ol>
+                <li>划分32条色深带来均分当前色深下的像素值</li>
+                <li>分为24~31，0~7的明带，暗带; 以及8~23的中间带</li>
+                <li>限制最大只能补偿4条相连的色深带，以确保 CTB 中色深差异不会大到触发 EO 同时涵盖足够大的斜面渐变</li>
+                <li>率失真优化找出所谓的补偿值：每条色深带的偏移值</li>
+            </ol>
+            <ul class="text-gray-side">
+                <li>共有0=无，1=横E0，2=纵EO，3=左倾EO，4=右倾EO，5=中间带，6=明暗带，共7种补偿方案</li>
+                <li>共有0=无，1=Y，2=Y+Cr，3=Y+Cb，4=YCbCr，5=Cr，6=Cb，7=CbCr种平面补偿开关</li>
+            </ul>
+            <p>融合 Merge 将相邻两个 CTB 的 SAO 信息(补偿方案, 平面补偿开关等)根据参数决定直接用上/左块，还是对比像素趋势更接近哪个。和选择 BO，EO 具体的偏移值一样由率失真优化决定</p>
+            
+
         </div>
 
         <!-- Footer -->

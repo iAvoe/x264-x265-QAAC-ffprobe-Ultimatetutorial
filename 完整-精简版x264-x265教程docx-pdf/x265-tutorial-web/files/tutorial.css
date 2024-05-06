@@ -98,7 +98,6 @@
 /* High-level inherited formatting*/
 body {
     font-family: var(--font-style-main);
-    font-size: 1em;
     background-color: #dee2e6;
 }
 code { font-family: var(--bs-font-monospace); }
