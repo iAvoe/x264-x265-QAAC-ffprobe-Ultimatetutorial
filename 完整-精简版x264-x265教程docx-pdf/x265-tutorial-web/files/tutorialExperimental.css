@@ -102,7 +102,7 @@ body {
     background-color: #dee2e6;
 }
 code { font-family: var(--bs-font-monospace); }
-pre { overflow-x: scroll; }
+pre { overflow-x: scroll; margin-top: 0; }
 .font-monospace { font-family: var(--bs-font-monospace) !important; }
 .text-gray-main { color: rgba(var(--rgb-dark-gray), var(--no-opacity)) !important; }
 .text-dark-green-main { color: rgba(var(--rgb-dark-green), var(--no-opacity)) !important; }
